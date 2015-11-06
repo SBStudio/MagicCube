@@ -28,7 +28,6 @@ namespace Framework
 				instance = new GameObject(name).AddComponent<T>();
 			}
 
-			instance.hideFlags = HideFlags.HideAndDontSave;
 			GameObject.DontDestroyOnLoad(instance);
 
 			return instance;

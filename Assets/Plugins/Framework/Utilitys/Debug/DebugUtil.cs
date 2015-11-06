@@ -6,7 +6,7 @@ namespace Framework
 {
 	public sealed class DebugUtil : MonoSingleton<DebugUtil>
 	{
-		private Dictionary<Type, IDebugInfo> m_DebugInfoDict = new Dictionary<Type, IDebugInfo>();
+		private readonly Dictionary<Type, IDebugInfo> m_DebugInfoDict = new Dictionary<Type, IDebugInfo>();
 
 		private void OnGUI()
 		{
@@ -23,22 +23,40 @@ namespace Framework
 				debugInfo.OnUpdate();
 			}
 		}
+		
+		private void LateUpdate()
+		{
+			foreach (IDebugInfo debugInfo in m_DebugInfoDict.Values)
+			{
+				debugInfo.OnLateUpdate();
+			}
+		}
+		
+		private void FixedUpdate()
+		{
+			foreach (IDebugInfo debugInfo in m_DebugInfoDict.Values)
+			{
+				debugInfo.OnFixedUpdate();
+			}
+		}
 
-		public static void Add<T>()
+		public static T Add<T>()
 			where T : IDebugInfo, new()
 		{
 			if (Contains<T>())
 			{
-				return;
+				return Get<T>();
 			}
 
 			T debugInfo = new T();
 
 			instance.m_DebugInfoDict.Add(typeof(T), debugInfo);
+
+			return debugInfo;
 		}
 
-		public static T Find<T>()
-			where T : IDebugInfo
+		public static T Get<T>()
+			where T : IDebugInfo, new()
 		{
 			if (!Contains<T>())
 			{
@@ -49,7 +67,7 @@ namespace Framework
 		}
 
 		public static void Remove<T>()
-			where T : IDebugInfo
+			where T : IDebugInfo, new()
 		{
 			if (!Contains<T>())
 			{
@@ -59,7 +77,8 @@ namespace Framework
 			instance.m_DebugInfoDict.Remove(typeof(T));
 		}
 
-		public static bool Contains<T>() where T : IDebugInfo
+		public static bool Contains<T>()
+			where T : IDebugInfo, new()
 		{
 			return instance.m_DebugInfoDict.ContainsKey(typeof(T));
 		}

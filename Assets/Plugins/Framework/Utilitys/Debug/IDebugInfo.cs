@@ -6,5 +6,7 @@ namespace Framework
 	{
 		void OnGUI();
 		void OnUpdate();
+		void OnLateUpdate();
+		void OnFixedUpdate();
 	}
 }
