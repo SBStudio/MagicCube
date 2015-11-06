@@ -16,7 +16,6 @@ namespace Framework
 				return s_Instance;
 			}
 		}
-
 		private static T s_Instance;
 
 		public static T CreateInstance<T>() where T : MonoSingleton<T>
@@ -29,6 +28,7 @@ namespace Framework
 				instance = new GameObject(name).AddComponent<T>();
 			}
 
+			instance.hideFlags = HideFlags.HideAndDontSave;
 			GameObject.DontDestroyOnLoad(instance);
 
 			return instance;

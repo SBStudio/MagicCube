@@ -5,18 +5,25 @@ namespace Framework
 {
 	public sealed class ObjectPool<T>
 	{
-		public delegate T ActiveCallback(object content);
+		public delegate T GenerateCallback(object content);
+		public delegate void ActiveCallback(T obj);
 		public delegate void DeactiveCallback(T obj);
-		public ActiveCallback onGenerateCallback;
+		public delegate void ClearCallback(T obj);
+
+		public GenerateCallback onGenerateCallback;
 		public ActiveCallback onActiveCallback;
 		public DeactiveCallback onDeactiveCallback;
-		public DeactiveCallback onClearCallback;
+		public ClearCallback onClearCallback;
+
 		public int step = 1;
 
 		private List<T> m_ActiveList = new List<T>();
 		private Queue<T> m_DeactivePool = new Queue<T>();
 
-		public ObjectPool(ActiveCallback onGenerateCallback)
+		public ObjectPool(GenerateCallback onGenerateCallback,
+		                  ActiveCallback onActiveCallback = null,
+		                  DeactiveCallback onDeactiveCallback = null,
+		                  ClearCallback onClearCallback = null)
 		{
 			if (null == onGenerateCallback)
 			{
@@ -24,6 +31,9 @@ namespace Framework
 			}
 
 			this.onGenerateCallback = onGenerateCallback;
+			this.onActiveCallback = onActiveCallback;
+			this.onDeactiveCallback = onDeactiveCallback;
+			this.onClearCallback = onClearCallback;
 		}
 		
 		public void Generate(object content)
