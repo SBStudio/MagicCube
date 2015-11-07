@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Framework
 {
-	public sealed class FPSInfo : IDebugInfo
+	public sealed class FPSInfo : DebugUtil.IDebugInfo
 	{
 		public const string INFO = "FPS:%0 (AVE:%1,MIN:%2,MAX:%3)";
 

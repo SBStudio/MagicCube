@@ -15,166 +15,159 @@ namespace Framework
 			File,
 			Http,
 		}
-
-		public static int maxLine = 20;
+		
+		private const string TEXT = "[%0] [%1] [%2 # %3] %4";
+		private const string DATE = "yyyy-MM-dd hh:mm:ss ffff";
 
 		public static string path
 		{
-			get { return m_Path; }
-			
-			set
+			get
 			{
-				string directory = value.Substring(0, value.LastIndexOf('/'));
-				if (!Directory.Exists(directory))
+				if (null == m_Path)
 				{
-					Directory.CreateDirectory(directory);
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+					m_Path = Application.persistentDataPath + "/Log/Log.txt";
+#else
+					m_Path = Application.dataPath + "/Log/Log.txt";
+#endif
 				}
 
-				m_Path = value;
+				return m_Path;
 			}
+			set { m_Path = value; }
 		}
 		private static string m_Path;
+
+		public static PrintType printType = PrintType.File;
+		public static int maxLine = 100;
 
 		private Queue<string> m_LogQue = new Queue<string>();
 		private Vector2 m_ScrollViewPosition = Vector2.zero;
 
-		private void InitPath()
+		public static void LogDebug(object info)
 		{
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            path = Application.persistentDataPath + "/Log/Log.txt";
-#else
-			path = Application.dataPath + "/Log/Log.txt";
-#endif
+			Log(printType, LogType.Log, info);
+		}
+
+		public static void LogWarning(object info)
+		{
+			Log(printType, LogType.Warning, info);
+		}
+
+		public static void LogError(object info)
+		{
+			Log(printType, LogType.Error, info);
+		}
+
+		public static void Log(PrintType printType, LogType logType, object msg)
+		{
+			string formatMsg = instance.Format(logType, msg);
+
+			switch (printType)
+			{
+				case PrintType.Screen:
+					instance.PrintScreen(logType, formatMsg);
+					break;
+				case PrintType.Console:
+					instance.PrintConsole(logType, formatMsg);
+					break;
+				case PrintType.File:
+					instance.PrintFile(logType, formatMsg);
+					break;
+				case PrintType.Http:
+					break;
+			}
+		}
+
+		public static void Clear()
+		{
+			switch (printType)
+			{
+			case PrintType.Screen:
+				instance.m_LogQue.Clear();
+				break;
+			case PrintType.Console:
+				UnityEngine.Debug.ClearDeveloperConsole();
+				break;
+			case PrintType.File:
+				File.WriteAllText(path, string.Empty);
+				break;
+			case PrintType.Http:
+				break;
+			}
 		}
 
 		private void OnGUI()
 		{
-			m_ScrollViewPosition = GUILayout.BeginScrollView(m_ScrollViewPosition);
-
+			string text = string.Empty;
 			foreach (string log in m_LogQue)
 			{
-				GUILayout.Label(log);
+				text += log + "\n";
 			}
 
+			m_ScrollViewPosition = GUILayout.BeginScrollView(m_ScrollViewPosition);
+			GUILayout.TextField(text);
 			GUILayout.EndScrollView();
 		}
 
-		public static void Debug(object info, PrintType printType = PrintType.File)
+		private void PrintScreen(LogType logType, string msg)
 		{
-			Print(LogType.Log, info.ToString(), printType);
-		}
-
-		public static void Warning(object info, PrintType printType = PrintType.File)
-		{
-			Print(LogType.Warning, info.ToString(), printType);
-		}
-
-		public static void Error(object info, PrintType printType = PrintType.File)
-		{
-			Print(LogType.Error, info.ToString(), printType);
-		}
-
-		public static void Clear(PrintType printType = PrintType.File)
-		{
-			switch (printType)
-			{
-				case PrintType.Screen:
-					instance.m_LogQue.Clear();
-					break;
-				case PrintType.Console:
-					UnityEngine.Debug.ClearDeveloperConsole();
-					break;
-				case PrintType.File:
-					if (null == path)
-					{
-						instance.InitPath();
-					}
-					File.WriteAllText(path, string.Empty);
-					break;
-				case PrintType.Http:
-					break;
-			}
-		}
-
-		private static void Print(LogType logType, string info, PrintType printType)
-		{
-			info = Format(logType, info);
-
-			switch (printType)
-			{
-				case PrintType.Screen:
-					PrintScreen(logType, info);
-					break;
-				case PrintType.Console:
-					PrintConsole(logType, info);
-					break;
-				case PrintType.File:
-					PrintFile(logType, info);
-					break;
-				case PrintType.Http:
-					break;
-			}
-		}
-
-		private static void PrintScreen(LogType logType, string info)
-		{
-			instance.m_LogQue.Enqueue(info);
+			instance.m_LogQue.Enqueue(msg);
 			if (instance.m_LogQue.Count > maxLine)
 			{
 				instance.m_LogQue.Dequeue();
 			}
 		}
 
-		private static void PrintConsole(LogType logType, string info)
+		private void PrintConsole(LogType logType, string msg)
 		{
 			switch (logType)
 			{
 				case LogType.Log:
-					UnityEngine.Debug.Log(info);
+					UnityEngine.Debug.Log(msg);
 					break;
 				case LogType.Warning:
-					UnityEngine.Debug.LogWarning(info);
+					UnityEngine.Debug.LogWarning(msg);
 					break;
 				case LogType.Error:
-					UnityEngine.Debug.LogError(info);
+					UnityEngine.Debug.LogError(msg);
 					break;
 			}
 		}
 
-		private static void PrintFile(LogType logType, string info)
+		private void PrintFile(LogType logType, string msg)
 		{
-			if (null == path)
+			string directory = path.Substring(0, path.LastIndexOf('/'));
+			if (!Directory.Exists(directory))
 			{
-				instance.InitPath();
+				Directory.CreateDirectory(directory);
 			}
 			
-			StreamWriter writer = new StreamWriter(path, true);
+			TextWriter m_TextWriter = null;
+			if (!File.Exists(path))
+			{
+				m_TextWriter = File.CreateText(path);
+			}
+			else
+			{
+				m_TextWriter = new StreamWriter(path, true);
+			}
 
-			try
-			{
-				writer.WriteLine(info);
-			}
-			catch (Exception e)
-			{
-				UnityEngine.Debug.Log(e);
-			}
-			finally
-			{
-				writer.Close();
-			}
+			m_TextWriter.WriteLine(msg);
+			m_TextWriter.Close();
 		}
 
-		private static string Format(LogType type, string info)
+		private string Format(LogType type, object msg)
 		{
 			StackFrame sf = new StackTrace(new StackFrame(3, true)).GetFrame(0);
-			int start = sf.GetFileName().LastIndexOf("\\");
+			int start = sf.GetFileName().LastIndexOf("/");
 			int end = sf.GetFileName().LastIndexOf(".");
 			string className = sf.GetFileName().Substring(start + 1, end - start - 1);
 			string functionName = sf.GetMethod().Name;
-			string logType = type.ToString();
+			string date = DateTime.Now.ToString(DATE);
+			string str = date.Replace(TEXT, type, date, className, functionName, msg);
 
-			return "[" + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss ffff") + "] ["
-				+ logType + "]" + " [" + className.ToString() + "#" + functionName + "] " + info.ToString();
+			return str;
 		}
 	}
 }

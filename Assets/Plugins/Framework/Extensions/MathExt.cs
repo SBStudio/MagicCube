@@ -18,7 +18,7 @@ namespace Framework
 			return number;
 		}
 
-		public static Vector3 EulerAngleToDirection(this float eulerAngle)
+		public static Vector3 AngleToDirection(this float eulerAngle)
 		{
 			float radian = Mathf.Deg2Rad * (eulerAngle - 90);
 			Vector3 direction = new Vector3(-Mathf.Cos(radian), 0, Mathf.Sin(radian)).normalized;
@@ -26,7 +26,7 @@ namespace Framework
 			return direction;
 		}
 
-		public static float DirectionToEulerAngle(this Vector3 direction)
+		public static float DirectionToAngle(this Vector3 direction)
 		{
 			float angle = Vector3.Angle(new Vector3(direction.x, 0, direction.z), Vector3.forward) * (direction.x > 0 ? -1 : 1);
 

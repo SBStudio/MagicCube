@@ -6,6 +6,14 @@ namespace Framework
 {
 	public sealed class DebugUtil : MonoSingleton<DebugUtil>
 	{
+		public interface IDebugInfo
+		{
+			void OnGUI();
+			void OnUpdate();
+			void OnLateUpdate();
+			void OnFixedUpdate();
+		}
+
 		private readonly Dictionary<Type, IDebugInfo> m_DebugInfoDict = new Dictionary<Type, IDebugInfo>();
 
 		private void OnGUI()
