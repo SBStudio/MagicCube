@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
-using System.Collections;
+using Framework;
 
-public class NewBehaviourScript : MonoBehaviour {
+public class NewBehaviourScript : MonoBehaviour
+{
+	private void Start()
+	{
+		FPSInfo fpsInfo = DebugUtil.Add<FPSInfo>();
 
-	// Use this for initialization
-	void Start () {
-		Framework.FPSInfo fpsInfo = Framework.DebugUtil.Add<Framework.FPSInfo>();
-		fpsInfo.showDetail = true;
+		TimerBehaviour timer = TimerUtil.Begin(OnTimer, 0, 1, 3, "asdf");
+
+		LogUtil.printType = LogUtil.PrintType.Screen;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+
+	private void OnTimer(object args)
+	{
+		LogUtil.LogError(args.ToString() + Time.time);
 	}
 }

@@ -1,138 +1,77 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace Framework
 {
 	public sealed class TimerUtil : MonoSingleton<TimerUtil>
 	{
-		public delegate void OnTimerCallback(object[] args);
+		public delegate void TimerCallback();
+		public delegate void TimerWithArgsCallback(object args);
 
-		private Dictionary<OnTimerCallback, TimerObject> m_TimerDict = new Dictionary<OnTimerCallback, TimerObject>();
-
-		private ObjectPool<TimerObject> m_TimerPool = new ObjectPool<TimerObject>(OnGenerateTimer, OnAcitveTimer, OnDeactiveTimer);
-
-		public static void Start(OnTimerCallback onTimerCallback, float time)
+		public static TimerBehaviour Begin(TimerCallback onTimerCallback,
+		                                   float starTime)
 		{
-			Start(onTimerCallback, time, 0, 0, null);
+			return Begin(onTimerCallback, starTime, 0, 0);
 		}
 
-		public static void Start(OnTimerCallback onTimerCallback, float time, object[] args)
+		public static TimerBehaviour Begin(TimerCallback onTimerCallback,
+		                                   float startTime,
+		                                   float repeatRate)
 		{
-			Start(onTimerCallback, time, 0, 0, args);
+			return Begin(onTimerCallback, startTime, repeatRate, 0);
 		}
 
-		public static void Start(OnTimerCallback onTimerCallback, float time, float repeatRate)
-		{
-			Start(onTimerCallback, time, repeatRate, 0, null);
-		}
-
-		public static void Start(OnTimerCallback onTimerCallback, float time, float repeatRate, object[] args)
-		{
-			Start(onTimerCallback, time, repeatRate, 0, args);
-		}
-
-		public static void Start(OnTimerCallback onTimerCallback, float time, float repeatRate, int repeatTimes, object[] args)
+		public static TimerBehaviour Begin(TimerCallback onTimerCallback,
+		                                   float startTime,
+		                                   float repeatRate,
+		                                   int repeatTimes)
 		{
 			if (null == onTimerCallback)
 			{
 				throw new System.NullReferenceException("The timer callback is null!");
 			}
 
-			if (instance.m_TimerDict.ContainsKey(onTimerCallback))
-			{
-				Stop(onTimerCallback);
-			}
+			TimerBehaviour timer = instance.gameObject.AddComponent<TimerBehaviour>();
+			timer.Begin(onTimerCallback, startTime, repeatRate, repeatTimes);
 
-			TimerObject timerObject = instance.m_TimerPool.Active(null);
-			instance.m_TimerDict[onTimerCallback] = timerObject;
-
-			timerObject.StartTimer(onTimerCallback, time, repeatRate, repeatTimes, args);
+			return timer;
 		}
 		
-		public static void Stop(OnTimerCallback onTimerCallback)
+		public static TimerBehaviour Begin(TimerWithArgsCallback onTimerWithArgsCallback,
+		                                   float starTime)
 		{
-			if (null == onTimerCallback)
+			return Begin(onTimerWithArgsCallback, starTime, 0, 0);
+		}
+		
+		public static TimerBehaviour Begin(TimerWithArgsCallback onTimerWithArgsCallback,
+		                                   float startTime,
+		                                   float repeatRate)
+		{
+			return Begin(onTimerWithArgsCallback, startTime, repeatRate, 0);
+		}
+		
+		public static TimerBehaviour Begin(TimerWithArgsCallback onTimerWithArgsCallback,
+		                                   float startTime,
+		                                   float repeatRate,
+		                                   int repeatTimes)
+		{
+			return Begin(onTimerWithArgsCallback, startTime, repeatRate, repeatTimes);
+		}
+
+		public static TimerBehaviour Begin(TimerWithArgsCallback onTimerWithArgsCallback,
+		                                   float startTime,
+		                                   float repeatRate,
+		                                   int repeatTimes,
+		                                   object args)
+		{
+			if (null == onTimerWithArgsCallback)
 			{
 				throw new System.NullReferenceException("The timer callback is null!");
 			}
 
-			TimerObject timerObject = instance.m_TimerDict[onTimerCallback];
-			timerObject.StopTimer();
-			instance.m_TimerPool.Deactive(timerObject);
-			instance.m_TimerDict.Remove(onTimerCallback);
-		}
+			TimerBehaviour timer = instance.gameObject.AddComponent<TimerBehaviour>();
+			timer.Begin(onTimerWithArgsCallback, startTime, repeatRate, repeatTimes, args);
 
-		public static void StopAll()
-		{
-			instance.m_TimerDict.Clear();
-			instance.StopAllCoroutines();
-		}
-
-		private static TimerObject OnGenerateTimer(object content)
-		{
-			GameObject obj = new GameObject("TimerObject");
-			obj.transform.parent = instance.transform;
-			obj.SetActive(false);
-			return obj.AddComponent<TimerObject>();
-		}
-
-		private static void OnAcitveTimer(TimerObject timerObject)
-		{
-			timerObject.gameObject.SetActive(true);
-		}
-
-		private static void OnDeactiveTimer(TimerObject timerObject)
-		{
-			timerObject.gameObject.SetActive(false);
-		}
-
-		private sealed class TimerObject : MonoBehaviour
-		{
-			private const string FUNCTION = "OnTimerInvoke";
-
-			private OnTimerCallback m_OnTimerCallback;
-
-			private int m_RepeatTimes;
-
-			private object[] m_Args;
-			
-			public void StartTimer(OnTimerCallback onTimerCallback,
-				float time, float repeatRate, int repeatTimes, object[] args)
-			{
-				m_OnTimerCallback = onTimerCallback;
-				m_Args = args;
-				m_RepeatTimes = repeatTimes;
-
-				name = onTimerCallback.Target + "_" + onTimerCallback.Method + "_Timer";
-
-				if (repeatRate > 0)
-				{
-					InvokeRepeating(FUNCTION, time == 0 ? 0.0000001f : time, repeatRate);
-				}
-				else
-				{
-					Invoke(FUNCTION, time);
-				}
-			}
-
-			public void StopTimer()
-			{
-				CancelInvoke(FUNCTION);
-			}
-
-			private void OnTimerInvoke()
-			{
-				m_OnTimerCallback(m_Args);
-
-				if (m_RepeatTimes > 0)
-				{
-					m_RepeatTimes--;
-					if (m_RepeatTimes <= 0)
-					{
-						TimerUtil.Stop(m_OnTimerCallback);
-					}
-				}
-			}
+			return timer;
 		}
 	}
 }
