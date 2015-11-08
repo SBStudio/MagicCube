@@ -40,7 +40,7 @@ namespace Framework
 			return element;
 		}
 
-		public XmlElement Get(string name)
+		public XmlElement Find(string name)
 		{
 			string[] childs = name.Split(SPLIT);
 
@@ -58,7 +58,7 @@ namespace Framework
 			return xmlElement;
 		}
 
-		public XmlNodeList GetAll(string name)
+		public XmlNodeList FindAll(string name)
 		{
 			string[] childs = name.Split(SPLIT);
 

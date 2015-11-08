@@ -10,31 +10,31 @@ namespace Framework
 
 		private struct DownloadRequest
 		{
+			public DownloadCallback onDownloadFinish;
 			public WWW www;
 			public int version;
-			public DownloadCallback onDownloadFinish;
 			
-			public DownloadRequest(string url,
-			                       int version,
-			                       DownloadCallback onDownloadFinish)
+			public DownloadRequest(DownloadCallback onDownloadFinish,
+			                       string url,
+			                       int version)
 			{
+				this.onDownloadFinish = onDownloadFinish;
 				this.www = version > 0 ? WWW.LoadFromCacheOrDownload(url, version) : new WWW(url);
 				this.version = version;
-				this.onDownloadFinish = onDownloadFinish;
 			}
 		}
 		
 		private readonly Dictionary<string, DownloadRequest> m_DownloadDict = new Dictionary<string, DownloadRequest>();
 
-		public static WWW Download(string url,
-		                           DownloadCallback onDownloadFinish)
+		public static WWW Download(DownloadCallback onDownloadFinish,
+		                           string url)
 		{
-			return Download(url, 0, onDownloadFinish);
+			return Download(onDownloadFinish, url, 0);
 		}
 
-		public static WWW Download(string url,
-		                           int version,
-		                           DownloadCallback onDownloadFinish)
+		public static WWW Download(DownloadCallback onDownloadFinish,
+		                           string url,
+		                           int version)
 		{
 			DownloadRequest request = default(DownloadRequest);
 
@@ -56,7 +56,7 @@ namespace Framework
 			}
 			else
 			{
-				request = new DownloadRequest(url, version, onDownloadFinish);
+				request = new DownloadRequest(onDownloadFinish, url, version);
 				
 				instance.StartCoroutine(instance.OnDownloadCoroutine(request));
 				instance.m_DownloadDict[url] = request;
