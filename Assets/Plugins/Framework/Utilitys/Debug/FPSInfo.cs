@@ -4,7 +4,7 @@ namespace Framework
 {
 	public sealed class FPSInfo : DebugUtil.IDebugInfo
 	{
-		public const string INFO = "FPS:%0 (AVE:%1,MIN:%2,MAX:%3)";
+		private const string INFO = "FPS:%0 (AVE:%1,MIN:%2,MAX:%3)";
 
 		public int fps { get; private set; }
 		public int aveFPS { get { return (int)(Time.frameCount / Time.time); } }

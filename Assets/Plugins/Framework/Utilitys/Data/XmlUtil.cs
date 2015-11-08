@@ -5,46 +5,46 @@ namespace Framework
 {
 	public sealed class XmlUtil
 	{
-		public const char SPLIT = '/';
-		public const string ELEMENT_ROOT = "root";
+		private const char SPLIT = '/';
+		private const string ELEMENT_ROOT = "root";
 
-		private XmlDocument m_XmlDoc = new XmlDocument();
-
-		public XmlElement root { get { return m_XmlDoc.DocumentElement; } }
+		public XmlDocument xmlDocument { get; private set; }
+		public XmlElement xmlRoot { get { return xmlDocument.DocumentElement; } }
 
 		public XmlUtil(string xml)
 		{
-			Load(xml);
-		}
-
-		public void Load(string xml)
-		{
-			m_XmlDoc.LoadXml(xml);
+			xmlDocument = new XmlDocument();
+			xmlDocument.LoadXml(xml);
 		}
 
 		public void Save(string path)
 		{
-			m_XmlDoc.Save(path);
+			xmlDocument.Save(path);
 		}
 
 		public XmlElement Add(string name)
 		{
-			return Add(root, name);
+			return Add(xmlRoot, name);
 		}
 
 		public XmlElement Add(XmlElement parent, string name)
 		{
-			XmlElement element = m_XmlDoc.CreateElement(name);
+			XmlElement element = xmlDocument.CreateElement(name);
 			parent.AppendChild(element);
 
 			return element;
+		}
+		
+		public void Remove(XmlElement xmlElement)
+		{
+			xmlRoot.RemoveChild(xmlElement);
 		}
 
 		public XmlElement Find(string name)
 		{
 			string[] childs = name.Split(SPLIT);
 
-			XmlElement xmlElement = root;
+			XmlElement xmlElement = xmlRoot;
 
 			foreach (string child in childs)
 			{
@@ -62,7 +62,7 @@ namespace Framework
 		{
 			string[] childs = name.Split(SPLIT);
 
-			XmlElement xmlElement = root;
+			XmlElement xmlElement = xmlRoot;
 
 			for (int i = 0; i < childs.Length; i++)
 			{
@@ -81,11 +81,6 @@ namespace Framework
 			}
 
 			return null;
-		}
-
-		public void Remove(XmlElement xmlElement)
-		{
-			root.RemoveChild(xmlElement);
 		}
 	}
 }

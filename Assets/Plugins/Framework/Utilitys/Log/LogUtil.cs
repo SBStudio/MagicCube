@@ -169,18 +169,18 @@ namespace Framework
 				Directory.CreateDirectory(directory);
 			}
 			
-			TextWriter m_TextWriter = null;
+			TextWriter writter = null;
 			if (!File.Exists(path))
 			{
-				m_TextWriter = File.CreateText(path);
+				writter = File.CreateText(path);
 			}
 			else
 			{
-				m_TextWriter = new StreamWriter(path, true);
+				writter = new StreamWriter(path, true);
 			}
 
-			m_TextWriter.WriteLine(msg);
-			m_TextWriter.Close();
+			writter.WriteLine(msg);
+			writter.Close();
 		}
 
 		private string Format(LogType type, object msg)
