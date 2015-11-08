@@ -6,21 +6,20 @@ namespace Framework
 	{
 		public const string INFO = "FPS:%0 (AVE:%1,MIN:%2,MAX:%3)";
 
-		public float updateTime = 0.5f;
-		public int size = 24;
-		public bool showDetail = false;
 		public int fps { get; private set; }
 		public int aveFPS { get { return (int)(Time.frameCount / Time.time); } }
 		public int minFPS { get; private set; }
 		public int maxFPS { get; private set; }
 		public int frameSum { get; private set; }
 		public float runTime { get; private set; }
+		public float updateTime = 0.5f;
+		public bool showDetail = false;
+		public int size = 24;
 		public Color color
 		{
 			get { return guiStyle.normal.textColor; }
 			set { guiStyle.normal.textColor = value; }
 		}
-
 		public GUIStyle guiStyle
 		{
 			get

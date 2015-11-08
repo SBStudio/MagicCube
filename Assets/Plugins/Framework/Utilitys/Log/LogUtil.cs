@@ -39,7 +39,28 @@ namespace Framework
 		private static string m_Path;
 
 		public static PrintType printType = PrintType.File;
+		
 		public static int maxLine = 100;
+		public static int size = 24;
+		public static Color color
+		{
+			get { return guiStyle.normal.textColor; }
+			set { guiStyle.normal.textColor = value; }
+		}
+		public static GUIStyle guiStyle
+		{
+			get
+			{
+				if (null == s_GUIStyle)
+				{
+					s_GUIStyle = new GUIStyle();
+					s_GUIStyle.normal.textColor = Color.black;
+				}
+				
+				return s_GUIStyle;
+			}
+		}
+		private static GUIStyle s_GUIStyle;
 
 		private Queue<string> m_LogQue = new Queue<string>();
 		private Vector2 m_ScrollViewPosition = Vector2.zero;
@@ -106,8 +127,13 @@ namespace Framework
 			}
 
 			m_ScrollViewPosition = GUILayout.BeginScrollView(m_ScrollViewPosition);
-			GUILayout.TextField(text);
+			GUILayout.TextField(text, guiStyle);
 			GUILayout.EndScrollView();
+		}
+
+		private void Update()
+		{
+			guiStyle.fontSize = (int)(size * ((float)Screen.height / 720));
 		}
 
 		private void PrintScreen(LogType logType, string msg)

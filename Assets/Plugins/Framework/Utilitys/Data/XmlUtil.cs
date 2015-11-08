@@ -10,13 +10,7 @@ namespace Framework
 
 		private XmlDocument m_XmlDoc = new XmlDocument();
 
-		public XmlElement root { get; private set; }
-
-		public XmlUtil()
-		{
-			root = m_XmlDoc.CreateElement(ELEMENT_ROOT);
-			m_XmlDoc.AppendChild(root);
-		}
+		public XmlElement root { get { return m_XmlDoc.DocumentElement; } }
 
 		public XmlUtil(string xml)
 		{
@@ -26,7 +20,6 @@ namespace Framework
 		public void Load(string xml)
 		{
 			m_XmlDoc.LoadXml(xml);
-			root = m_XmlDoc.DocumentElement;
 		}
 
 		public void Save(string path)
@@ -47,14 +40,9 @@ namespace Framework
 			return element;
 		}
 
-		public void Remove(XmlElement xmlElement)
+		public XmlElement Get(string name)
 		{
-			root.RemoveChild(xmlElement);
-		}
-
-		public XmlElement Find(string path)
-		{
-			string[] childs = path.Split(SPLIT);
+			string[] childs = name.Split(SPLIT);
 
 			XmlElement xmlElement = root;
 
@@ -70,9 +58,9 @@ namespace Framework
 			return xmlElement;
 		}
 
-		public XmlNodeList FindAll(string path)
+		public XmlNodeList GetAll(string name)
 		{
-			string[] childs = path.Split(SPLIT);
+			string[] childs = name.Split(SPLIT);
 
 			XmlElement xmlElement = root;
 
@@ -93,6 +81,11 @@ namespace Framework
 			}
 
 			return null;
+		}
+
+		public void Remove(XmlElement xmlElement)
+		{
+			root.RemoveChild(xmlElement);
 		}
 	}
 }

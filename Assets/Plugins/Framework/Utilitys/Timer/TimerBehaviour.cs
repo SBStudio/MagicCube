@@ -68,8 +68,7 @@ namespace Framework
 			
 			if (repeatTimes > 0)
 			{
-				repeatTimes--;
-				if (repeatTimes <= 0)
+				if (--repeatTimes <= 0)
 				{
 					Stop();
 				}

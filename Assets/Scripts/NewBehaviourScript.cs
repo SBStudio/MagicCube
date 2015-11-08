@@ -7,7 +7,7 @@ public class NewBehaviourScript : MonoBehaviour
 	{
 		FPSInfo fpsInfo = DebugUtil.Add<FPSInfo>();
 
-		TimerBehaviour timer = TimerUtil.Begin(OnTimer, 0, 1, 3, "asdf");
+		TimerBehaviour timer = TimerUtil.Begin(OnTimer, 0, 1, 0, "asdf");
 
 		LogUtil.printType = LogUtil.PrintType.Screen;
 	}
