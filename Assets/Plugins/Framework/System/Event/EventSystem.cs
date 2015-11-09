@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Framework
+﻿namespace Framework
 {
-	public sealed class EventModule<T> : Singleton<EventModule<T>>
+	public sealed class EventSystem<T> : Singleton<EventSystem<T>>
 	{
 		public delegate void EventCallback(T arg);
 

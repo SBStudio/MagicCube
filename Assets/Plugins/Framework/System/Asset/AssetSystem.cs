@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Framework
 {
-	public sealed class AssetModule : Singleton<AssetModule>
+	public sealed class AssetSystem : Singleton<AssetSystem>
 	{
 		private readonly Dictionary<string, AssetBundle> m_AssetDict = new Dictionary<string, AssetBundle>();
 
