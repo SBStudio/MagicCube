@@ -4,7 +4,7 @@ namespace Framework
 {
 	public static class ObjectExt
 	{
-		public static string Replace(this string str, string value, params object[] args)
+		public static string Replace(string value, params object[] args)
 		{
 			for (int i = args.Length; --i >= 0;)
 			{

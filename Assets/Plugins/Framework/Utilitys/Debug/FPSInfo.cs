@@ -46,7 +46,7 @@ namespace Framework
 
 			if (showDetail)
 			{
-				str = str.Replace(INFO, fps, aveFPS, minFPS, maxFPS);
+				str = ObjectExt.Replace(INFO, fps, aveFPS, minFPS, maxFPS);
 			}
 
 			GUI.depth = int.MinValue;

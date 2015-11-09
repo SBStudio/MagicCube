@@ -5,15 +5,10 @@ public class NewBehaviourScript : MonoBehaviour
 {
 	private void Start()
 	{
-		FPSInfo fpsInfo = DebugUtil.Add<FPSInfo>();
+		DebugUtil.Add<FPSInfo>();
 
-		TimerBehaviour timer = TimerUtil.Begin(OnTimer, 0, 1, 0, "asdf");
-
-		LogUtil.printType = LogUtil.PrintType.Screen;
-	}
-
-	private void OnTimer(object args)
-	{
-		LogUtil.LogError(args.ToString() + Time.time);
+		SqliteUtil db = new SqliteUtil("xuanyusong.db");
+		db.Create("momo",new string[]{"name","qq","email","blog"}, new string[]{"text","text","text","text"});
+		db.Close();
 	}
 }

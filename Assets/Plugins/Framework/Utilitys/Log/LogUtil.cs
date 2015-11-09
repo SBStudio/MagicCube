@@ -191,7 +191,7 @@ namespace Framework
 			string className = sf.GetFileName().Substring(start + 1, end - start - 1);
 			string functionName = sf.GetMethod().Name;
 			string date = DateTime.Now.ToString(DATE);
-			string str = date.Replace(TEXT, type, date, className, functionName, msg);
+			string str = ObjectExt.Replace(TEXT, type, date, className, functionName, msg);
 
 			return str;
 		}
