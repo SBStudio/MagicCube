@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Framework
 {
-	public sealed class FPSInfo : DebugUtil.IDebugInfo
+	public sealed class FPSInfo : ScriptableBehaviour
 	{
 		private const string INFO = "FPS:%0 (AVE:%1,MIN:%2,MAX:%3)";
 
@@ -40,7 +40,7 @@ namespace Framework
 			runTime = Time.time;
 		}
 
-		public void OnGUI()
+		public override void OnGUI()
 		{
 			string str = fps.ToString();
 
@@ -53,7 +53,7 @@ namespace Framework
 			GUILayout.Label(str, guiStyle);
 		}
 
-		public void OnUpdate()
+		public override void OnUpdate()
 		{
 			guiStyle.fontSize = (int)(size * ((float)Screen.height / 720));
 
@@ -77,14 +77,6 @@ namespace Framework
 				frameSum = 0;
 				runTime = Time.time;
 			}
-		}
-
-		public void OnLateUpdate()
-		{
-		}
-
-		public void OnFixedUpdate()
-		{
 		}
 	}
 }

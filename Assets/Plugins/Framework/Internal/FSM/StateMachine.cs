@@ -4,30 +4,66 @@ using System.Collections.Generic;
 
 namespace Framework
 {
-	public sealed class StateMachine
+	public sealed class StateMachine : MonoBehaviour
 	{
 		private Dictionary<Type, IState> m_StateDict = new Dictionary<Type, IState>();
 
 		public IState globalState { get; private set; }
 		public IState state { get; private set; }
 		public IState prevState { get; private set; }
-		public bool isRunning { get; private set; }
 
-		private void OnEnable()
+		private void Update()
 		{
-			Run();
+			if (null != globalState)
+			{
+				globalState.OnUpdate();
+			}
+
+			if (null != state)
+			{
+				
+				state.OnUpdate();
+			}
+		}
+		
+		private void LateUpdate()
+		{
+			if (null != globalState)
+			{
+				globalState.OnLateUpdate();
+			}
+
+			if (null != state)
+			{
+				state.OnLateUpdate();
+			}
+		}
+		
+		private void FixedUpdate()
+		{
+			if (null != globalState)
+			{
+				globalState.OnFixedUpdate();
+			}
+
+			if (null != state)
+			{
+				
+				state.OnFixedUpdate();
+			}
 		}
 
-		public void OnUpdate()
+		private void OnGUI()
 		{
-			if (null != state && isRunning)
+			if (null != globalState)
 			{
-				if (null != globalState)
-				{
-					globalState.OnUpdate();
-				}
+				globalState.OnGUI();
+			}
 
-				state.OnUpdate();
+			if (null != state)
+			{
+				
+				state.OnGUI();
 			}
 		}
 
@@ -35,12 +71,13 @@ namespace Framework
 		{
 			if (null != globalState)
 			{
-				globalState.OnExit();
+				globalState.OnDestroy();
+				globalState = null;
 			}
 
 			foreach (IState state in m_StateDict.Values)
 			{
-				state.OnExit();
+				state.OnDestroy();
 			}
 
 			m_StateDict.Clear();
@@ -82,7 +119,6 @@ namespace Framework
 			
 			Type type = typeof(T);
 			IState state = ScriptableObject.CreateInstance<T>();
-			state.stateMachine = this;
 
 			m_StateDict.Add(type, state);
 		}
@@ -125,16 +161,6 @@ namespace Framework
 			Type type = typeof(T);
 
 			return m_StateDict.ContainsKey(type);
-		}
-
-		public void Run()
-		{
-			isRunning = true;
-		}
-
-		public void Pause()
-		{
-			isRunning = false;
 		}
 	}
 }

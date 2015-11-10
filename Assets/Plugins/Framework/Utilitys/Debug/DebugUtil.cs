@@ -6,27 +6,11 @@ namespace Framework
 {
 	public sealed class DebugUtil : MonoSingleton<DebugUtil>
 	{
-		public interface IDebugInfo
-		{
-			void OnGUI();
-			void OnUpdate();
-			void OnLateUpdate();
-			void OnFixedUpdate();
-		}
-
-		private readonly Dictionary<Type, IDebugInfo> m_DebugInfoDict = new Dictionary<Type, IDebugInfo>();
-
-		private void OnGUI()
-		{
-			foreach (IDebugInfo debugInfo in m_DebugInfoDict.Values)
-			{
-				debugInfo.OnGUI();
-			}
-		}
+		private readonly Dictionary<Type, ScriptableBehaviour> m_DebugInfoDict = new Dictionary<Type, ScriptableBehaviour>();
 
 		private void Update()
 		{
-			foreach (IDebugInfo debugInfo in m_DebugInfoDict.Values)
+			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
 			{
 				debugInfo.OnUpdate();
 			}
@@ -34,7 +18,7 @@ namespace Framework
 		
 		private void LateUpdate()
 		{
-			foreach (IDebugInfo debugInfo in m_DebugInfoDict.Values)
+			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
 			{
 				debugInfo.OnLateUpdate();
 			}
@@ -42,14 +26,30 @@ namespace Framework
 		
 		private void FixedUpdate()
 		{
-			foreach (IDebugInfo debugInfo in m_DebugInfoDict.Values)
+			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
 			{
 				debugInfo.OnFixedUpdate();
 			}
 		}
 
+		private void OnGUI()
+		{
+			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
+			{
+				debugInfo.OnGUI();
+			}
+		}
+
+		private void OnDestroy()
+		{
+			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
+			{
+				debugInfo.OnDestroy();
+			}
+		}
+
 		public static T Add<T>()
-			where T : IDebugInfo, new()
+			where T : ScriptableBehaviour, new()
 		{
 			if (Contains<T>())
 			{
@@ -64,7 +64,7 @@ namespace Framework
 		}
 
 		public static T Get<T>()
-			where T : IDebugInfo, new()
+			where T : ScriptableBehaviour, new()
 		{
 			if (!Contains<T>())
 			{
@@ -75,7 +75,7 @@ namespace Framework
 		}
 
 		public static void Remove<T>()
-			where T : IDebugInfo, new()
+			where T : ScriptableBehaviour, new()
 		{
 			if (!Contains<T>())
 			{
@@ -86,7 +86,7 @@ namespace Framework
 		}
 
 		public static bool Contains<T>()
-			where T : IDebugInfo, new()
+			where T : ScriptableBehaviour, new()
 		{
 			return instance.m_DebugInfoDict.ContainsKey(typeof(T));
 		}

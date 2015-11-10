@@ -2,10 +2,8 @@
 
 namespace Framework
 {
-	public abstract class IState : ScriptableObject
+	public abstract class IState : ScriptableBehaviour
 	{
-		public StateMachine stateMachine;
-
 		public virtual void OnEnter()
 		{
 		}
@@ -14,13 +12,9 @@ namespace Framework
 		{
 		}
 
-		public virtual void OnUpdate()
-		{
-		}
-
 		public virtual bool OnCondition(IState nextState)
 		{
-			return true;
+			return this != nextState;
 		}
 	}
 }
