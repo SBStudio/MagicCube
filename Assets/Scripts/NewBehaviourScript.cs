@@ -7,8 +7,10 @@ public class NewBehaviourScript : MonoBehaviour
 	{
 		DebugUtil.Add<FPSInfo>();
 
-		SqliteUtil db = new SqliteUtil("xuanyusong.db");
-		db.Create("momo",new string[]{"name","qq","email","blog"}, new string[]{"text","text","text","text"});
-		db.Close();
+//		SqliteUtil db = new SqliteUtil("xuanyusong.db");
+//		db.Set("momo", "email", "herox25000@gmail.com", new string[] { "name", "qq" }, new string[] { "yogi", "76288397" });
+//		db.Add("momo", new string[] { "yogi1", "76288397", "herox25001@gmail.com", "www.yogi1.com" });
+//		db.Delete("momo", new string[]{"email"}, new string[]{"herox25000@gmail.com"});
+//		db.Close();
 	}
 }
