@@ -38,7 +38,7 @@ namespace Framework
 		}
 		private static string m_Path;
 
-		public static PrintType printType = PrintType.File;
+		public static PrintType printType = PrintType.Console;
 		
 		public static int maxLine = 100;
 		public static int size = 24;

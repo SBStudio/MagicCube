@@ -3,9 +3,25 @@ using Framework;
 
 public class NewBehaviourScript : MonoBehaviour
 {
+	private class UserInfo : IDatabase
+	{
+		public override string[] columns {
+			get {
+				return Columns;
+			}
+		}
+
+		public static readonly string[] Columns = new string[]
+		{
+			"Name", "QQ", "Email"
+		};
+	}
+
 	private void Start()
 	{
 		DebugUtil.Add<FPSInfo>();
+
+		DataSystem.Add<UserInfo>("Database.db3");
 
 //		SqliteUtil db = new SqliteUtil("xuanyusong.db");
 //		db.Set("momo", "email", "herox25000@gmail.com", new string[] { "name", "qq" }, new string[] { "yogi", "76288397" });

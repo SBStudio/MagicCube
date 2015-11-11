@@ -18,47 +18,54 @@ namespace Framework
 		private const string COMMAND_SPLIT = ", ";
 		private const string COMMAND_EQUAL = " = ";
 		private const string COMMAND_OR = " or ";
-		private const string COMMAND_AND = " AND ";
+		private const string COMMAND_AND = " and ";
 		private const string COMMAND_TEXT = "'%0'";
 		private const string COMMAND_OPEN = "data source=%0";
-		private const string COMMAND_FIND_ALL = "SELECT * FROM %0";
-		private const string COMMAND_ADD = "INSERT INTO %0 VALUES (%1)";
-		private const string COMMAND_ADD_INTO = "INSERT INTO %0 (%1) VALUES (%2)";
-		private const string COMMAND_GET = "SELECT %0 FROM %1 WHERE %2";
-		private const string COMMAND_SET = "UPDATE %0 SET %1 WHERE %2";
-		private const string COMMAND_DELETE = "DELETE FROM %0 WHERE %1";
-		private const string COMMAND_CLEAR = "DELETE FROM %0";
-		private const string COMMAND_CREATE = "CREATE TABLE %0 (%1)";
+		private const string COMMAND_CREATE = "create table if not exists %0 (%1)";
+		private const string COMMAND_ADD = "insert into %0 values (%1)";
+		private const string COMMAND_ADD_INTO = "insert into %0 (%1) values (%2)";
+		private const string COMMAND_GET = "select %0 from %1 where %2";
+		private const string COMMAND_GET_ALL = "select * from %0";
+		private const string COMMAND_SET = "update %0 SET %1 where %2";
+		private const string COMMAND_DELETE = "delete from %0 where %1";
+		private const string COMMAND_CLEAR = "delete from %0";
 		
-		public SqliteConnection sqliteConnection { get; private set; }
-		public SqliteCommand sqliteCommand { get; private set; }
+		private SqliteConnection m_SqliteConnection;
+		private SqliteCommand m_SqliteCommand;
 		
 		public SqliteUtil(string name)
 		{
-			sqliteConnection = new SqliteConnection(ObjectExt.Replace(COMMAND_OPEN, name));
-			sqliteConnection.Open();
+			string command = ObjectExt.Replace(COMMAND_OPEN, name);
+			m_SqliteConnection = new SqliteConnection(command);
+			m_SqliteConnection.Open();
 		}
 		
 		public void Close()
 		{
-			sqliteCommand.Dispose();
+			m_SqliteCommand.Dispose();
 
-			sqliteConnection.Close();
-			sqliteConnection.Dispose();
+			m_SqliteConnection.Close();
+			m_SqliteConnection.Dispose();
 		}
 		
 		public SqliteDataReader Execute(string command)
 		{
-			sqliteCommand = sqliteConnection.CreateCommand();
-			sqliteCommand.CommandText = command;
-			SqliteDataReader sqliteReader = sqliteCommand.ExecuteReader();
+			m_SqliteCommand = m_SqliteConnection.CreateCommand();
+			m_SqliteCommand.CommandText = command;
+			SqliteDataReader sqliteReader = m_SqliteCommand.ExecuteReader();
 
 			return sqliteReader;
 		}
 		
-		public SqliteDataReader FindAll(string name)
+		public SqliteDataReader Create(string name, string[] columns, DataType[] types)
 		{
-			string command = ObjectExt.Replace(COMMAND_FIND_ALL, name);
+			string key = columns[0] + COMMAND_SPACE + types[0].ToString();
+			for (int i = 1; i < columns.Length; ++i)
+			{
+				key += COMMAND_SPLIT + columns[i] + COMMAND_SPACE + types[i].ToString();
+			}
+			
+			string command = ObjectExt.Replace(COMMAND_CREATE, name, key);
 			
 			return Execute(command);
 		}
@@ -113,6 +120,13 @@ namespace Framework
 
 			return Execute(command);
 		}
+		
+		public SqliteDataReader GetAll(string name)
+		{
+			string command = ObjectExt.Replace(COMMAND_GET_ALL, name);
+			
+			return Execute(command);
+		}
 
 		public SqliteDataReader Set(string name, string getKey, string getValue, string setKey, string setValue)
 		{
@@ -154,19 +168,6 @@ namespace Framework
 		{
 			string command = ObjectExt.Replace(COMMAND_CLEAR, name);
 			
-			return Execute(command);
-		}
-
-		public SqliteDataReader Create(string name, string[] keys, DataType[] types)
-		{
-			string key = keys[0] + COMMAND_SPACE + types[0].ToString();
-			for (int i = 1; i < keys.Length; ++i)
-			{
-				key += COMMAND_SPLIT + keys[i] + COMMAND_SPACE + types[i].ToString();
-			}
-
-			string command = ObjectExt.Replace(COMMAND_CREATE, name, key);
-
 			return Execute(command);
 		}
 	}
