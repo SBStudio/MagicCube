@@ -1,7 +1,7 @@
 ﻿namespace Framework
 {
-	public interface IParser
+	public interface IParser<T>
 	{
-		void Parse(object arg);
+		void Parse(T arg);
 	}
 }

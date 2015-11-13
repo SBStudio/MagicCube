@@ -8,7 +8,7 @@ namespace Framework
 		{
 			for (int i = args.Length; --i >= 0;)
 			{
-				string arg = args[i].ToString();
+				string arg = null == args[i] ? "Null" : args[i].ToString();
 
 				value = value.Replace("%" + i, arg);
 			}

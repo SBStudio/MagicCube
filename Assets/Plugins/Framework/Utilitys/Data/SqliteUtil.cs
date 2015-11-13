@@ -1,19 +1,11 @@
 ﻿using UnityEngine;
+using System;
 using Mono.Data.Sqlite;
 
 namespace Framework
 {
 	public sealed class SqliteUtil
 	{
-		public enum DataType
-		{
-			NULL,
-			INTEGER,
-			REAL,
-			TEXT,
-			BLOB,
-		}
-
 		private const string COMMAND_SPACE = " ";
 		private const string COMMAND_SPLIT = ", ";
 		private const string COMMAND_EQUAL = " = ";
@@ -39,6 +31,20 @@ namespace Framework
 			m_SqliteConnection = new SqliteConnection(command);
 			m_SqliteConnection.Open();
 		}
+
+		private string GetDataType(Type type)
+		{
+			if (typeof(int) == type)
+			{
+				return "INTEGER";
+			}
+			else if (typeof(float) == type)
+			{
+				return "REAL";
+			}
+
+			return "TEXT";
+		}
 		
 		public void Close()
 		{
@@ -57,116 +63,116 @@ namespace Framework
 			return sqliteReader;
 		}
 		
-		public SqliteDataReader Create(string name, string[] columns, DataType[] types)
+		public SqliteDataReader Create(string table, string[] types, Type[] dataTypes)
 		{
-			string key = columns[0] + COMMAND_SPACE + types[0].ToString();
-			for (int i = 1; i < columns.Length; ++i)
+			string type = types[0] + COMMAND_SPACE + GetDataType(dataTypes[0]);
+			for (int i = 1; i < types.Length; ++i)
 			{
-				key += COMMAND_SPLIT + columns[i] + COMMAND_SPACE + types[i].ToString();
+				type += COMMAND_SPLIT + types[i] + COMMAND_SPACE + GetDataType(dataTypes[i]);
 			}
 			
-			string command = ObjectExt.Replace(COMMAND_CREATE, name, key);
-			
-			return Execute(command);
-		}
-
-		public SqliteDataReader Add(string name, string[] values)
-		{
-			string value = ObjectExt.Replace(COMMAND_TEXT, values[0]);
-			for (int i = 1; i < values.Length; ++i)
-			{
-				value += COMMAND_SPLIT + ObjectExt.Replace(COMMAND_TEXT, values[i]);
-			}
-
-			string command = ObjectExt.Replace(COMMAND_ADD, name, value);
+			string command = ObjectExt.Replace(COMMAND_CREATE, table, type);
 			
 			return Execute(command);
 		}
 
-		public SqliteDataReader Add(string name, string[] keys, string[] values)
+		public SqliteDataReader Add(string table, string[] datas)
 		{
-			string key = keys[0];
-			for (int i = 1; i < keys.Length; ++i)
+			string data = ObjectExt.Replace(COMMAND_TEXT, datas[0]);
+			for (int i = 1; i < datas.Length; ++i)
 			{
-				key += COMMAND_SPLIT + keys[i];
+				data += COMMAND_SPLIT + ObjectExt.Replace(COMMAND_TEXT, datas[i]);
 			}
 
-			string value = ObjectExt.Replace(COMMAND_TEXT, values[0]);
-			for (int i = 1; i < values.Length; ++i)
-			{
-				value += COMMAND_SPLIT + ObjectExt.Replace(COMMAND_TEXT, values[i]);
-			}
-
-			string command = ObjectExt.Replace(COMMAND_ADD_INTO, name, key, value);
+			string command = ObjectExt.Replace(COMMAND_ADD, table, data);
 			
 			return Execute(command);
 		}
 
-		public SqliteDataReader Get(string name, string[] selections, string[] keys, string[] conditions, string[] values)
+		public SqliteDataReader Add(string table, string[] types, string[] datas)
 		{
-			string select = selections[0];
-			for (int i = 1; i < selections.Length; ++i)
+			string type = types[0];
+			for (int i = 1; i < types.Length; ++i)
 			{
-				select += COMMAND_SPLIT + selections[i];
+				type += COMMAND_SPLIT + types[i];
 			}
 
-			string condition = keys[0] + conditions[0] + ObjectExt.Replace(COMMAND_TEXT, values[0]);
-			for (int i = 1; i < keys.Length; ++i)
+			string data = ObjectExt.Replace(COMMAND_TEXT, datas[0]);
+			for (int i = 1; i < datas.Length; ++i)
 			{
-				condition += COMMAND_AND + keys[i] + conditions[i] + ObjectExt.Replace(COMMAND_TEXT, values[i]);
+				data += COMMAND_SPLIT + ObjectExt.Replace(COMMAND_TEXT, datas[i]);
 			}
 
-			string command = ObjectExt.Replace(COMMAND_GET, name, select, condition);
+			string command = ObjectExt.Replace(COMMAND_ADD_INTO, table, type, data);
+			
+			return Execute(command);
+		}
+
+		public SqliteDataReader Get(string table, string[] getTypes, string[] types, string[] conditions, string[] values)
+		{
+			string getType = getTypes[0];
+			for (int i = 1; i < getTypes.Length; ++i)
+			{
+				getType += COMMAND_SPLIT + getTypes[i];
+			}
+
+			string condition = types[0] + conditions[0] + ObjectExt.Replace(COMMAND_TEXT, values[0]);
+			for (int i = 1; i < types.Length; ++i)
+			{
+				condition += COMMAND_AND + types[i] + conditions[i] + ObjectExt.Replace(COMMAND_TEXT, values[i]);
+			}
+
+			string command = ObjectExt.Replace(COMMAND_GET, getType, table, condition);
 
 			return Execute(command);
 		}
 		
-		public SqliteDataReader GetAll(string name)
+		public SqliteDataReader GetAll(string table)
 		{
-			string command = ObjectExt.Replace(COMMAND_GET_ALL, name);
+			string command = ObjectExt.Replace(COMMAND_GET_ALL, table);
 			
 			return Execute(command);
 		}
 
-		public SqliteDataReader Set(string name, string getKey, string getValue, string setKey, string setValue)
+		public SqliteDataReader Set(string table, string getType, string getValue, string setType, string setValue)
 		{
-			string get = getKey + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, getValue);
-			string set = setKey + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, setValue);
-			string command = ObjectExt.Replace(COMMAND_SET, name, set, get);
+			string get = getType + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, getValue);
+			string set = setType + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, setValue);
+			string command = ObjectExt.Replace(COMMAND_SET, table, set, get);
 			
 			return Execute(command);
 		}
 
-		public SqliteDataReader Set(string name, string getKey, string getValue, string[] setKeys, string[] setValues)
+		public SqliteDataReader Set(string table, string getType, string getValue, string[] setTypes, string[] setValues)
 		{
-			string get = getKey + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, getValue);
-			string set = setKeys[0] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, setValues[0]);
+			string get = getType + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, getValue);
+			string set = setTypes[0] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, setValues[0]);
 			for (int i = 1; i < setValues.Length; ++i)
 			{
-				set += COMMAND_SPLIT + setKeys[i] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, setValues[i]);
+				set += COMMAND_SPLIT + setTypes[i] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, setValues[i]);
 			}
 
-			string command = ObjectExt.Replace(COMMAND_SET, name, set, get);
+			string command = ObjectExt.Replace(COMMAND_SET, table, set, get);
 			
 			return Execute(command);
 		}
 	
-		public SqliteDataReader Delete(string name, string[] keys, string[] values)
+		public SqliteDataReader Delete(string table, string[] types, string[] values)
 		{
-			string get = keys[0] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, values[0]);
-			for (int i = 1; i < keys.Length; ++i)
+			string type = types[0] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, values[0]);
+			for (int i = 1; i < types.Length; ++i)
 			{
-				get += COMMAND_OR + keys[i] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, values[i]);
+				type += COMMAND_OR + types[i] + COMMAND_EQUAL + ObjectExt.Replace(COMMAND_TEXT, values[i]);
 			}
 
-			string command = ObjectExt.Replace(COMMAND_DELETE, name, get);
+			string command = ObjectExt.Replace(COMMAND_DELETE, table, type);
 
 			return Execute(command);
 		}
 
-		public SqliteDataReader Clear(string name)
+		public SqliteDataReader Clear(string table)
 		{
-			string command = ObjectExt.Replace(COMMAND_CLEAR, name);
+			string command = ObjectExt.Replace(COMMAND_CLEAR, table);
 			
 			return Execute(command);
 		}

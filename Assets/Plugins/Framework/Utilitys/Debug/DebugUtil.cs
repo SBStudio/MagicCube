@@ -49,14 +49,14 @@ namespace Framework
 		}
 
 		public static T Add<T>()
-			where T : ScriptableBehaviour, new()
+			where T : ScriptableBehaviour
 		{
 			if (Contains<T>())
 			{
 				return Get<T>();
 			}
 
-			T debugInfo = new T();
+			T debugInfo = ScriptableObject.CreateInstance<T>();
 
 			instance.m_DebugInfoDict.Add(typeof(T), debugInfo);
 
@@ -64,7 +64,7 @@ namespace Framework
 		}
 
 		public static T Get<T>()
-			where T : ScriptableBehaviour, new()
+			where T : ScriptableBehaviour
 		{
 			if (!Contains<T>())
 			{
@@ -75,7 +75,7 @@ namespace Framework
 		}
 
 		public static void Remove<T>()
-			where T : ScriptableBehaviour, new()
+			where T : ScriptableBehaviour
 		{
 			if (!Contains<T>())
 			{
@@ -86,7 +86,7 @@ namespace Framework
 		}
 
 		public static bool Contains<T>()
-			where T : ScriptableBehaviour, new()
+			where T : ScriptableBehaviour
 		{
 			return instance.m_DebugInfoDict.ContainsKey(typeof(T));
 		}
