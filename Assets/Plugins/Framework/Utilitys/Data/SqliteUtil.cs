@@ -46,7 +46,7 @@ namespace Framework
 			return "TEXT";
 		}
 		
-		public void Close()
+		public void Dispose()
 		{
 			m_SqliteCommand.Dispose();
 

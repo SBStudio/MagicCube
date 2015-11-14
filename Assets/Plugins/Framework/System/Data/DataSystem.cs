@@ -4,32 +4,19 @@ using Mono.Data.Sqlite;
 
 namespace Framework
 {
-	public interface IDataInfo<T> : IParser<Dictionary<string, object>>
+	public interface IDataInfo : IParser<Dictionary<string, object>>
 	{
-		string database { get; }
-		string table { get; }
-		Dictionary<string, Type> types { get; }
-		T key { get; }
+		object key { get; }
 	}
 
-	public sealed class DataSystem<K, V> where V : IDataInfo<K>, new()
+	public sealed class DataSystem<T> where T : IDataInfo, new()
 	{
-		public static readonly DataSystem<K, V> instance = new DataSystem<K, V>();
+		private static Dictionary<object, T> s_DataDict = new Dictionary<object, T>();
 
-		private Dictionary<K, V> m_DataDict = new Dictionary<K, V>();
-
-		public DataSystem()
+		public static void Init(string database, string table)
 		{
-			V dataInfo = new V();
-
-			SqliteUtil sqliteUtil = new SqliteUtil(dataInfo.database);
-			string tableName = dataInfo.table;
-			string[] types = new string[dataInfo.types.Count];
-			dataInfo.types.Keys.CopyTo(types, 0);
-			Type[] dataTypes = new Type[dataInfo.types.Count];
-			dataInfo.types.Values.CopyTo(dataTypes, 0);
-
-			sqliteUtil.Create(tableName, types, dataTypes);
+			SqliteUtil sqliteUtil = new SqliteUtil(database);
+			string tableName = table;
 
 			SqliteDataReader reader = sqliteUtil.GetAll(tableName);
 			while (reader.Read())
@@ -38,38 +25,34 @@ namespace Framework
 				for (int i = reader.FieldCount; --i >= 0;)
 				{
 					string type = reader.GetName(i);
-					int index = reader.GetOrdinal(type);
-
-					Type dataType = reader.GetFieldType(index);
-					if (typeof(int) == dataType)
-					{
-						data[type] = reader.GetInt32(index);
-					}
-					else if (typeof(float) == dataType)
-					{
-						data[type] = reader.GetFloat(index);
-					}
-					else
-					{
-						data[type] = reader.GetString(index);
-					}
+					data[type] = reader.GetValue(i);
 				}
 
-				dataInfo = new V();
+				T dataInfo = new T();
 				dataInfo.Parse(data);
 				
-				m_DataDict[dataInfo.key] = dataInfo;
+				s_DataDict[dataInfo.key] = dataInfo;
 			}
+
+			sqliteUtil.Dispose();
 		}
 
-		public V Get(K key)
+		public static T Get(object key)
 		{
-			if (!m_DataDict.ContainsKey(key))
+			if (!s_DataDict.ContainsKey(key))
 			{
-				return default(V);
+				return default(T);
 			}
 
-			return m_DataDict[key];
+			return s_DataDict[key];
+		}
+
+		public static T[] GetAll()
+		{
+			T[] datas = new T[s_DataDict.Count];
+			s_DataDict.Values.CopyTo(datas, 0);
+
+			return datas;
 		}
 	}
 }
