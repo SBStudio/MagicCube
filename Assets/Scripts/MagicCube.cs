@@ -11,17 +11,22 @@ public sealed class MagicCube : MonoBehaviour
 		FORWARD,
 	}
 
+	public Camera camera;
 	public GameObject cubePrefab;
 	public int step;
+	public int layer;
 	public float size;
 	public float space;
 	public float rollTime = 1;
+	public float viewDistance = 4;
+	public float viewLerp = 10;
+	public float viewSensitivity = 50;
 	
+	public int maxLayer { get; private set; }
 	public bool isRolling { get { return m_RollStartTime > 0; } }
-
-	private CubeUnit[] m_CubeUnits;
+	
+	private Dictionary<int, List<CubeUnit>> m_CubeDict = new Dictionary<int, List<CubeUnit>>();
 	private float m_Distance;
-	private float m_RaycastRadius;
 	private CubeUnit m_SelectCube;
 	private CubeUnit[] m_RollCubes;
 	private Vector3[] m_RollPositions;
@@ -40,40 +45,70 @@ public sealed class MagicCube : MonoBehaviour
 		InputModule inputModule = InputModule.instance;
 		Application.targetFrameRate = 60;
 
-		m_RaycastRadius = size * 0.1f;
 		m_Distance = size + space;
-		float offset = (step - 1) * 0.5f;
-
-		m_CubeUnits = new CubeUnit[step * step * step];
-		for (int i = m_CubeUnits.Length; --i >= 0;)
+		float offset = (1 - step) * 0.5f;
+		
+		if (null == camera)
 		{
-			Vector3 position = new Vector3(i % step - offset,
-			                               (i / step) % step - offset,
-			                               (i / (step * step)) % step - offset) * m_Distance;
+			camera = Camera.main;
+		}
+
+		maxLayer = (step - 1) / 2;
+
+		int num = step * step * step;
+		for (int i = num; --i >= 0;)
+		{
+			Vector3 grids = new Vector3(i % step + offset,
+			                            (i / step) % step + offset,
+			                            (i / (step * step)) % step + offset);
+
+			Vector3 position = grids * m_Distance;
+			int layer = (int)Mathf.Max(Mathf.Abs(grids.x), Mathf.Abs(grids.y), Mathf.Abs(grids.z));
 			
 			CubeUnit cubeUnit = Instantiate(cubePrefab).AddComponent<CubeUnit>();
 			cubeUnit.name = i.ToString();
 			cubeUnit.transform.parent = transform;
 			cubeUnit.transform.localPosition = position;
 			cubeUnit.transform.localScale = Vector3.one * size;
-			cubeUnit.GetComponent<Renderer>().material.color = GetColor();
-			m_CubeUnits[i] = cubeUnit;
+			cubeUnit.grids = grids;
+			cubeUnit.layer = layer;
+			cubeUnit.color = GetColor();
+			
+			if (!m_CubeDict.ContainsKey(layer))
+			{
+				m_CubeDict[layer] = new List<CubeUnit>();
+			}
+			m_CubeDict[layer].Add(cubeUnit);
 		}
+
+		SetLayer(maxLayer);
 	}
 	
 	private void Update()
 	{
-		UpdateRoll();
+		UpdateRoll(Time.deltaTime);
+		UpdateCamera(Time.deltaTime);
 	}
 
-	private void UpdateRoll()
+	private void OnGUI()
+	{
+		for (int i = 0; i <= maxLayer; ++i)
+		{
+			if (GUILayout.Button("Layer: " + i))
+			{
+				SetLayer(i);
+			}
+		}
+	}
+
+	private void UpdateRoll(float deltaTime)
 	{
 		if (!isRolling)
 		{
 			return;
 		}
 
-		float deltaTime = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
+		deltaTime = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
 		float angle = m_RollAngle * deltaTime;
 		
 		Vector3 center = Vector3.zero;
@@ -102,6 +137,13 @@ public sealed class MagicCube : MonoBehaviour
 		}
 	}
 
+	private void UpdateCamera(float deltaTime)
+	{
+		Vector3 position = Vector3.back * (layer + 1) * m_Distance * viewDistance;
+
+		camera.transform.position = Vector3.Lerp(camera.transform.position, position, viewLerp * deltaTime);
+	}
+
 	private void OnInputEvent(InputEvent evt)
 	{
 		if (evt.inputType == InputEvent.InputType.InputStart)
@@ -123,17 +165,21 @@ public sealed class MagicCube : MonoBehaviour
 		if (int.MinValue == m_RollInputId
 		    && !isRolling)
 		{
-			Ray ray = Camera.main.ScreenPointToRay(evt.position);
-			RaycastHit raycastHit;
-			if (Physics.Raycast(ray, out raycastHit))
+			Ray ray = camera.ScreenPointToRay(evt.position);
+			RaycastHit[] raycastHits = Physics.RaycastAll(ray);
+			for (int i = 0; i < raycastHits.Length; ++i)
 			{
+				RaycastHit raycastHit = raycastHits[i];
 				m_SelectCube = raycastHit.collider.GetComponent<CubeUnit>();
-				if (null != m_SelectCube)
+				if (null == m_SelectCube
+				    || m_SelectCube.layer != layer)
 				{
-					m_RollInputId = evt.inputId;
-					
-					return;
+					continue;
 				}
+
+				m_RollInputId = evt.inputId;
+
+				return;
 			}
 		}
 
@@ -153,8 +199,8 @@ public sealed class MagicCube : MonoBehaviour
 			Vector3 deltaPosition = evt.deltaPosition;
 			deltaPosition /= Screen.dpi * Time.deltaTime;
 			
-			transform.Rotate(Camera.main.transform.up, -deltaPosition.x, Space.World);
-			transform.Rotate(Camera.main.transform.right, deltaPosition.y, Space.World);
+			transform.Rotate(camera.transform.up, -deltaPosition.x * viewSensitivity * evt.deltaTime, Space.World);
+			transform.Rotate(camera.transform.right, deltaPosition.y * viewSensitivity * evt.deltaTime, Space.World);
 		}
 	}
 
@@ -172,6 +218,30 @@ public sealed class MagicCube : MonoBehaviour
 		{
 			m_ViewInputId = int.MinValue;
 		}
+	}
+
+	public void SetLayer(int value)
+	{
+		value = Mathf.Clamp(value, 0, maxLayer);
+		if (value == layer)
+		{
+			return;
+		}
+
+		foreach (int l in m_CubeDict.Keys)
+		{
+			List<CubeUnit> cubeList = m_CubeDict[l];
+			bool enable = l == value;
+
+			for (int i = cubeList.Count; --i >= 0;)
+			{
+				CubeUnit cube = cubeList[i];
+
+				cube.GetComponent<Renderer>().enabled = enable;
+			}
+		}
+
+		layer = value;
 	}
 
 	private void RollCubes(Vector3 direction)
@@ -205,8 +275,8 @@ public sealed class MagicCube : MonoBehaviour
 		
 		for (int i = axisList.Count; --i >= 0;)
 		{
-			float project1 = Vector3.Project(Camera.main.transform.forward, forward).magnitude;
-			float project2 = Vector3.Project(Camera.main.transform.forward, axisList[i]).magnitude;
+			float project1 = Vector3.Project(camera.transform.forward, forward).magnitude;
+			float project2 = Vector3.Project(camera.transform.forward, axisList[i]).magnitude;
 			forward = project1 > project2 ? forward : axisList[i];
 		}
 		axisList.Remove(forward);
@@ -255,26 +325,27 @@ public sealed class MagicCube : MonoBehaviour
 		directions[2] = right;
 		directions[3] = -right;
 
+		float distance = m_Distance * step;
+
 		for (int i = directions.Length; --i >= 0;)
 		{
 			Vector3 direction = directions[i];
 			Vector3 position = cube.transform.position + direction * m_Distance;
 
-			Collider[] colliders = Physics.OverlapSphere(position, m_RaycastRadius);
-			if (0 >= colliders.Length)
+			RaycastHit[] raycastHits = Physics.RaycastAll(cube.transform.position, direction, distance);
+			for (int j = raycastHits.Length; --j >= 0;)
 			{
-				continue;
+				RaycastHit raycastHit = raycastHits[j];
+				CubeUnit nextCube = raycastHit.collider.GetComponent<CubeUnit>();
+				if (null == nextCube
+				    || cubeList.Contains(nextCube))
+				{
+					continue;
+				}
+				
+				Debug.DrawLine(cube.transform.position, position, Color.red, 2, false);
+				SelectCubes(nextCube, cubeList, forward, right);
 			}
-
-			CubeUnit nextCube = colliders[0].GetComponent<CubeUnit>();
-			if (null == nextCube
-			    || cubeList.Contains(nextCube))
-			{
-				continue;
-			}
-			
-			SelectCubes(nextCube, cubeList, forward, right);
-			Debug.DrawLine(cube.transform.position, position, Color.red, 2, false);
 		}
 	}
 

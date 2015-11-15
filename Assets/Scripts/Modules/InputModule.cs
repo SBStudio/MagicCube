@@ -30,6 +30,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 				evt.inputId = touch.fingerId;
 				evt.inputType = InputEvent.InputType.InputStart;
 				evt.position = touch.position;
+				evt.deltaTime = Time.deltaTime;
 				
 				EventSystem<InputEvent>.Broadcast(evt);
 				
@@ -47,6 +48,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 				evt.lastPosition = evt.position;
 				evt.position = touch.position;
 				evt.deltaPosition = evt.position - evt.lastPosition;
+				evt.deltaTime = Time.deltaTime;
 				
 				EventSystem<InputEvent>.Broadcast(evt);
 			}
@@ -57,6 +59,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 				evt.inputType = InputEvent.InputType.InputEnd;
 				evt.lastPosition = evt.position;
 				evt.position = touch.position;
+				evt.deltaTime = Time.deltaTime;
 				
 				EventSystem<InputEvent>.Broadcast(evt);
 				
@@ -70,6 +73,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 			evt.inputId = INPUT_ID_MOUSE;
 			evt.inputType = InputEvent.InputType.InputStart;
 			evt.position = Input.mousePosition;
+			evt.deltaTime = Time.deltaTime;
 			
 			EventSystem<InputEvent>.Broadcast(evt);
 			
@@ -87,6 +91,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 			evt.lastPosition = evt.position;
 			evt.position = Input.mousePosition;
 			evt.deltaPosition = evt.position - evt.lastPosition;
+			evt.deltaTime = Time.deltaTime;
 			
 			EventSystem<InputEvent>.Broadcast(evt);
 		}
@@ -96,6 +101,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 			evt.inputType = InputEvent.InputType.InputEnd;
 			evt.lastPosition = evt.position;
 			evt.position = Input.mousePosition;
+			evt.deltaTime = Time.deltaTime;
 			
 			EventSystem<InputEvent>.Broadcast(evt);
 			
