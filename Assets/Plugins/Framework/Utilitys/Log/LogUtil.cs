@@ -21,7 +21,7 @@ namespace Framework
 #else
 		private const string TEXT = "[%0] [%1] %2";
 #endif
-		private const string DATE = "yyyy-MM-dd hh:mm:ss ffff";
+		private const string DATE = "yyMMdd hh:mm:ss ffff";
 
 		public static string path
 		{
@@ -55,16 +55,16 @@ namespace Framework
 		{
 			get
 			{
-				if (null == s_GUIStyle)
+				if (null == instance.m_GUIStyle)
 				{
-					s_GUIStyle = new GUIStyle();
-					s_GUIStyle.normal.textColor = Color.black;
+					instance.m_GUIStyle = new GUIStyle();
+					instance.m_GUIStyle.normal.textColor = Color.black;
 				}
 				
-				return s_GUIStyle;
+				return instance.m_GUIStyle;
 			}
 		}
-		private static GUIStyle s_GUIStyle;
+		private GUIStyle m_GUIStyle;
 
 		private Queue<string> m_LogQue = new Queue<string>();
 		private bool m_Toggle = true;

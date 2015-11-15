@@ -17,13 +17,14 @@ public sealed class MagicCube : MonoBehaviour
 	public int layer;
 	public float size;
 	public float space;
+	public float rollError = 0;
 	public float rollTime = 1;
 	public float viewDistance = 4;
 	public float viewLerp = 10;
 	public float viewSensitivity = 50;
 	
 	public int maxLayer { get; private set; }
-	public bool isRolling { get { return m_RollStartTime > 0; } }
+	public bool isRolling { get { return 0 < m_RollStartTime; } }
 	
 	private Dictionary<int, List<CubeUnit>> m_CubeDict = new Dictionary<int, List<CubeUnit>>();
 	private float m_Distance;
@@ -34,6 +35,7 @@ public sealed class MagicCube : MonoBehaviour
 	private RollAxis m_RollAxis;
 	private float m_RollAngle;
 	private float m_RollStartTime = int.MinValue;
+	private float m_ColorTime = int.MinValue;
 	private int m_RollInputId = int.MinValue;
 	private int m_ViewInputId = int.MinValue;
 
@@ -67,11 +69,13 @@ public sealed class MagicCube : MonoBehaviour
 			
 			CubeUnit cubeUnit = Instantiate(cubePrefab).AddComponent<CubeUnit>();
 			cubeUnit.name = i.ToString();
+			cubeUnit.gameObject.layer = LayerDefine.CUBE;
 			cubeUnit.transform.parent = transform;
 			cubeUnit.transform.localPosition = position;
 			cubeUnit.transform.localScale = Vector3.one * size;
 			cubeUnit.grids = grids;
 			cubeUnit.layer = layer;
+			cubeUnit.collider.size = Vector3.one * (1 + space);
 			cubeUnit.color = GetColor();
 			
 			if (!m_CubeDict.ContainsKey(layer))
@@ -95,7 +99,7 @@ public sealed class MagicCube : MonoBehaviour
 	{
 		for (int i = 0; i <= maxLayer; ++i)
 		{
-			if (GUILayout.Button("Layer: " + i))
+			if (GUILayout.Button("Layer: " + i, LogUtil.guiStyle))
 			{
 				SetLayer(i);
 			}
@@ -140,16 +144,21 @@ public sealed class MagicCube : MonoBehaviour
 
 	private void UpdateColor(float deltaTime)
 	{
-		for (int i = maxLayer + 1; --i > layer;)
+		if (0 >= m_ColorTime)
 		{
-			foreach (CubeUnit cube in m_CubeDict[i])
-			{
-				if (!cube.renderer.enabled)
-				{
-					continue;
-				}
+			return;
+		}
 
-				cube.renderer.enabled = cube.color.a > 0;
+		if (Time.time >= m_ColorTime)
+		{
+			m_ColorTime = int.MinValue;
+			
+			for (int i = maxLayer + 1; --i > layer;)
+			{
+				foreach (CubeUnit cube in m_CubeDict[i])
+				{
+					cube.renderer.enabled = false;
+				}
 			}
 		}
 	}
@@ -184,18 +193,26 @@ public sealed class MagicCube : MonoBehaviour
 		    && !isRolling)
 		{
 			Ray ray = camera.ScreenPointToRay(evt.position);
-			RaycastHit[] raycastHits = Physics.RaycastAll(ray);
+			RaycastHit[] raycastHits = Physics.RaycastAll(ray,
+			                                              Mathf.Abs(camera.transform.position.z),
+			                                              1 << LayerDefine.CUBE,
+			                                              QueryTriggerInteraction.Collide);
 			for (int i = 0; i < raycastHits.Length; ++i)
 			{
 				RaycastHit raycastHit = raycastHits[i];
-				m_SelectCube = raycastHit.collider.GetComponent<CubeUnit>();
-				if (null == m_SelectCube
-				    || m_SelectCube.layer != layer)
+				CubeUnit cube = raycastHit.collider.GetComponent<CubeUnit>();
+				if (null == cube
+				    || cube.layer != layer)
 				{
 					continue;
 				}
 
 				m_RollInputId = evt.inputId;
+				m_SelectCube = cube;
+				
+#if UNITY_EDITOR
+				Debug.DrawLine(camera.transform.position, camera.transform.position + ray.direction * Mathf.Abs(camera.transform.position.z), Color.green, 3, false);
+#endif
 
 				return;
 			}
@@ -227,10 +244,13 @@ public sealed class MagicCube : MonoBehaviour
 		if (m_RollInputId == evt.inputId)
 		{
 			m_RollInputId = int.MinValue;
+			
+#if UNITY_EDITOR
+			Ray ray = camera.ScreenPointToRay(evt.position);
+			Debug.DrawLine(camera.transform.position, camera.transform.position + ray.direction * Mathf.Abs(camera.transform.position.z), Color.blue, 3, false);
+#endif
 
-			Vector3 direction = evt.deltaPosition.normalized;
-
-			RollCubes(direction);
+			RollCubes(evt.deltaPosition);
 		}
 		else if (m_ViewInputId == evt.inputId)
 		{
@@ -248,7 +268,7 @@ public sealed class MagicCube : MonoBehaviour
 		
 		this.layer = value;
 
-		float time = 1 / viewLerp;
+		m_ColorTime = 1 / viewLerp;
 		foreach (int layer in m_CubeDict.Keys)
 		{
 			List<CubeUnit> cubeList = m_CubeDict[layer];
@@ -263,19 +283,26 @@ public sealed class MagicCube : MonoBehaviour
 				{
 					Color color = cube.color;
 					color.a = layer == value ? 1 : 0;
-					iTween.ColorTo(cube.gameObject, color, time);
+					iTween.ColorTo(cube.gameObject, color, m_ColorTime);
 				}
 			}
 		}
+		m_ColorTime += Time.time;
 	}
 
-	private void RollCubes(Vector3 direction)
+	private void RollCubes(Vector3 deltaPosition)
 	{
-		if (isRolling)
+		if (isRolling
+		    || Vector3.zero == deltaPosition)
 		{
 			return;
 		}
 
+#if UNITY_EDITOR
+		Debug.DrawLine(camera.transform.position, m_SelectCube.transform.position, Color.red, 3, false);
+#endif
+
+		Vector3 direction = deltaPosition.normalized;
 		Vector3 right = Vector3.zero, up = Vector3.zero, forward = Vector3.zero;
 		List<CubeUnit> cubeList = new List<CubeUnit>();
 		
@@ -310,7 +337,7 @@ public sealed class MagicCube : MonoBehaviour
 		
 		m_RollAxis = axisDict[up];
 		m_RollStartTime = Time.time;
-		
+
 		SelectCubes(m_SelectCube, cubeList, forward, right);
 		m_RollCubes = cubeList.ToArray();
 		
@@ -357,7 +384,11 @@ public sealed class MagicCube : MonoBehaviour
 			Vector3 direction = directions[i];
 			Vector3 position = cube.transform.position + direction * m_Distance;
 
-			RaycastHit[] raycastHits = Physics.RaycastAll(cube.transform.position, direction, distance);
+			RaycastHit[] raycastHits = Physics.RaycastAll(cube.transform.position,
+			                                              direction,
+			                                              distance,
+			                                              1 << LayerDefine.CUBE,
+			                                              QueryTriggerInteraction.Collide);
 			for (int j = raycastHits.Length; --j >= 0;)
 			{
 				RaycastHit raycastHit = raycastHits[j];
@@ -368,7 +399,9 @@ public sealed class MagicCube : MonoBehaviour
 					continue;
 				}
 				
-				Debug.DrawLine(cube.transform.position, position, Color.red, 2, false);
+#if UNITY_EDITOR
+				Debug.DrawLine(cube.transform.position, position, Color.red, 3, false);
+#endif
 				SelectCubes(nextCube, cubeList, forward, right);
 			}
 		}
