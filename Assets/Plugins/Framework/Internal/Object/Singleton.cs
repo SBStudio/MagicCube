@@ -2,8 +2,8 @@
 
 namespace Framework
 {
-	public abstract class Singleton<T> : ScriptableObject where T : Singleton<T>
+	public abstract class Singleton<T> where T : new()
 	{
-		public static readonly T instance = ScriptableObject.CreateInstance<T>();
+		public static readonly T instance = new T();
 	}
 }
