@@ -92,17 +92,20 @@ public sealed class MagicCube : MonoBehaviour
 				
 				for (int i = axisList.Count; --i >= 0;)
 				{
+					float project1 = Vector3.Project(direction, right).magnitude;
+					float project2 = Vector3.Project(direction, axisList[i]).magnitude;
+					right = project1 > project2 ? right : axisList[i];
+				}
+				axisList.Remove(right);
+
+				for (int i = axisList.Count; --i >= 0;)
+				{
 					float project1 = Vector3.Project(Vector3.forward, forward).magnitude;
 					float project2 = Vector3.Project(Vector3.forward, axisList[i]).magnitude;
 					forward = project1 > project2 ? forward : axisList[i];
-					
-					project1 = Vector3.Project(direction, right).magnitude;
-					project2 = Vector3.Project(direction, axisList[i]).magnitude;
-					right = project1 > project2 ? right : axisList[i];
 				}
-				
 				axisList.Remove(forward);
-				axisList.Remove(right);
+
 				up = axisList[0];
 
 				SelectCubes(selection, cubeList, forward, right);
@@ -173,25 +176,29 @@ public sealed class MagicCube : MonoBehaviour
 
 		cubeList.Add(cube);
 
-		Collider[] colliders = Physics.OverlapSphere(cube.transform.position + forward * distance, raycastRadius);
-		for (int i = colliders.Length; --i >= 0;)
+		Vector3[] directions = new Vector3[4];
+		directions[0] = forward;
+		directions[1] = -forward;
+		directions[2] = right;
+		directions[3] = -right;
+
+		for (int i = directions.Length; --i >= 0;)
 		{
-			SelectCubes(colliders[i].gameObject, cubeList, forward, right);
-		}
-		colliders = Physics.OverlapSphere(cube.transform.position - forward * distance, raycastRadius);
-		for (int i = colliders.Length; --i >= 0;)
-		{
-			SelectCubes(colliders[i].gameObject, cubeList, forward, right);
-		}
-		colliders = Physics.OverlapSphere(cube.transform.position + right * distance, raycastRadius);
-		for (int i = colliders.Length; --i >= 0;)
-		{
-			SelectCubes(colliders[i].gameObject, cubeList, forward, right);
-		}
-		colliders = Physics.OverlapSphere(cube.transform.position - right * distance, raycastRadius);
-		for (int i = colliders.Length; --i >= 0;)
-		{
-			SelectCubes(colliders[i].gameObject, cubeList, forward, right);
+			Vector3 direction = directions[i];
+			Collider[] colliders = Physics.OverlapSphere(cube.transform.position + direction * distance, raycastRadius);
+			if (0 >= colliders.Length)
+			{
+				continue;
+			}
+
+			GameObject collider = colliders[0].gameObject;
+			if (cubeList.Contains(collider))
+			{
+				continue;
+			}
+			
+			SelectCubes(collider, cubeList, forward, right);
+			Debug.DrawLine(cube.transform.position, cube.transform.position + direction * distance, Color.red, 3, false);
 		}
 	}
 	
