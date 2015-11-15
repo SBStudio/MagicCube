@@ -15,8 +15,12 @@ namespace Framework
 			File,
 			Http,
 		}
-		
+
+#if UNITY_EDITOR
 		private const string TEXT = "[%0] [%1] [%2 # %3] %4";
+#else
+		private const string TEXT = "[%0] [%1] %2";
+#endif
 		private const string DATE = "yyyy-MM-dd hh:mm:ss ffff";
 
 		public static string path
@@ -63,6 +67,7 @@ namespace Framework
 		private static GUIStyle s_GUIStyle;
 
 		private Queue<string> m_LogQue = new Queue<string>();
+		private bool m_Toggle = true;
 		private Vector2 m_ScrollViewPosition = Vector2.zero;
 
 		public static void LogDebug(object info)
@@ -118,9 +123,17 @@ namespace Framework
 			}
 		}
 
+		private void Awake()
+		{
+			Application.logMessageReceived += OnConsoleMessage;
+		}
+
 		private void OnGUI()
 		{
-			if (0 >= m_LogQue.Count)
+			m_Toggle = GUILayout.Toggle(m_Toggle, "Show Log", guiStyle);
+
+			if (!m_Toggle
+			    || 0 >= m_LogQue.Count)
 			{
 				return;
 			}
@@ -139,6 +152,16 @@ namespace Framework
 		private void Update()
 		{
 			guiStyle.fontSize = (int)(size * ((float)Screen.height / 720));
+		}
+		
+		private void OnConsoleMessage(string condition, string stackTrace, LogType logType)
+		{
+			if (printType == PrintType.Console)
+			{
+				return;
+			}
+
+			Log(printType, logType, condition + "\n" + stackTrace);
 		}
 
 		private void PrintScreen(LogType logType, string msg)
@@ -190,13 +213,18 @@ namespace Framework
 
 		private string Format(LogType type, object msg)
 		{
+			string date = DateTime.Now.ToString(DATE);
+
+#if UNITY_EDITOR
 			StackFrame sf = new StackTrace(new StackFrame(3, true)).GetFrame(0);
 			int start = sf.GetFileName().LastIndexOf("/");
 			int end = sf.GetFileName().LastIndexOf(".");
 			string className = sf.GetFileName().Substring(start + 1, end - start - 1);
 			string functionName = sf.GetMethod().Name;
-			string date = DateTime.Now.ToString(DATE);
 			string str = ObjectExt.Replace(TEXT, type, date, className, functionName, msg);
+#else
+			string str = ObjectExt.Replace(TEXT, type, date, msg);
+#endif
 
 			return str;
 		}

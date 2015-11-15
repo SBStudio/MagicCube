@@ -50,7 +50,8 @@ public sealed class InputModule : MonoSingleton<InputModule>
 				
 				EventSystem<InputEvent>.Broadcast(evt);
 			}
-			else
+			else if (touch.phase == TouchPhase.Ended
+			         || touch.phase == TouchPhase.Canceled)
 			{
 				InputEvent evt = m_InputDict[touch.fingerId];
 				evt.inputType = InputEvent.InputType.InputEnd;

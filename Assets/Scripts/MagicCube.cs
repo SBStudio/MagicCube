@@ -28,12 +28,15 @@ public sealed class MagicCube : MonoBehaviour
 	private RollAxis m_RollAxis;
 	private float m_RollAngle;
 	private float m_RollStartTime = 0;
-	private int m_RollInputId = -1;
+	private int m_RollInputId = int.MinValue;
 
 	private void Awake()
 	{
-		Debug.Log(InputModule.instance);
+		DebugUtil.Add<FPSInfo>();
+		LogUtil.printType = LogUtil.PrintType.Screen;
 		EventSystem<InputEvent>.Add(OnInputEvet);
+		InputModule inputModule = InputModule.instance;
+		Application.targetFrameRate = 60;
 
 		m_RaycastRadius = size * 0.25f;
 		m_Distance = size + space;
@@ -129,6 +132,7 @@ public sealed class MagicCube : MonoBehaviour
 		{
 			Vector3 deltaPosition = evt.deltaPosition;
 			deltaPosition /= Screen.dpi * Time.deltaTime;
+			LogUtil.LogDebug(deltaPosition);
 			
 			transform.Rotate(Camera.main.transform.up, -deltaPosition.x, Space.World);
 			transform.Rotate(Camera.main.transform.right, deltaPosition.y, Space.World);
@@ -197,7 +201,7 @@ public sealed class MagicCube : MonoBehaviour
 			
 			m_RollAxis = axisDict[up];
 			m_RollStartTime = Time.time;
-			m_RollInputId = -1;
+			m_RollInputId = int.MinValue;
 		}
 	}
 
