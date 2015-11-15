@@ -14,7 +14,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 
 	private void UpdateInput()
 	{
-#if UNITY_ANDROID || UNITY_IPHONE
+#if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IPHONE)
 		if (0 >= Input.touchCount)
 		{
 			return;
@@ -38,11 +38,11 @@ public sealed class InputModule : MonoSingleton<InputModule>
 			else if (touch.phase == TouchPhase.Moved)
 			{
 				InputEvent evt = m_InputDict[touch.fingerId];
-				if (evt.position == touch.position)
+				if (touch.position == evt.position)
 				{
 					return;
 				}
-
+				
 				evt.inputType = InputEvent.InputType.InputMove;
 				evt.lastPosition = evt.position;
 				evt.position = touch.position;
@@ -77,7 +77,7 @@ public sealed class InputModule : MonoSingleton<InputModule>
 		else if (Input.GetMouseButton(INPUT_ID_MOUSE))
 		{
 			InputEvent evt = m_InputDict[INPUT_ID_MOUSE];
-			if (evt.position == Input.mousePosition)
+			if (new Vector2(Input.mousePosition.x, Input.mousePosition.y) == evt.position)
 			{
 				return;
 			}

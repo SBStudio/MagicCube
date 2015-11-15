@@ -11,7 +11,7 @@ public sealed class InputEvent
 	
 	public int inputId;
 	public InputType inputType;
-	public Vector3 lastPosition;
-	public Vector3 position;
-	public Vector3 deltaPosition;
+	public Vector2 lastPosition;
+	public Vector2 position;
+	public Vector2 deltaPosition;
 }

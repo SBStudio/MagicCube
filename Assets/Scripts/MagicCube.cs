@@ -27,7 +27,7 @@ public sealed class MagicCube : MonoBehaviour
 	private Vector3 m_RollCenter;
 	private RollAxis m_RollAxis;
 	private float m_RollAngle;
-	private float m_RollStartTime;
+	private float m_RollStartTime = 0;
 	private int m_RollInputId = -1;
 
 	private void Awake()
@@ -53,6 +53,40 @@ public sealed class MagicCube : MonoBehaviour
 			gameObject.transform.localScale = Vector3.one * size;
 			gameObject.GetComponent<Renderer>().material.color = GetColor();
 			cubes[i] = gameObject;
+		}
+	}
+	
+	private void Update()
+	{
+		if (0 < m_RollStartTime)
+		{
+			float deltaTime = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
+			float angle = m_RollAngle * deltaTime;
+			
+			if (1 <= deltaTime)
+			{
+				angle = m_RollAngle;
+				m_Selection = null;
+				m_RollStartTime = 0;
+			}
+			
+			m_RollCenter = Vector3.zero;
+			for (int i = m_Selections.Length; --i >= 0;)
+			{
+				GameObject cube = m_Selections[i];
+				
+				m_RollCenter += cube.transform.position;
+			}
+			m_RollCenter /= m_Selections.Length;
+			
+			for (int i = m_Selections.Length; --i >= 0;)
+			{
+				GameObject cube = m_Selections[i];
+				
+				cube.transform.localPosition = m_RollPositions[i];
+				cube.transform.localEulerAngles = m_RollEulerAngles[i];
+				cube.transform.RotateAround(m_RollCenter, ParseAxis(m_RollAxis), angle);
+			}
 		}
 	}
 
@@ -164,41 +198,6 @@ public sealed class MagicCube : MonoBehaviour
 			m_RollAxis = axisDict[up];
 			m_RollStartTime = Time.time;
 			m_RollInputId = -1;
-		}
-	}
-
-	private void Update()
-	{
-		if (null != m_Selection
-		    && 0 < m_RollStartTime)
-		{
-			float deltaTime = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
-			float angle = m_RollAngle * deltaTime;
-			
-			if (1 <= deltaTime)
-			{
-				angle = m_RollAngle;
-				m_Selection = null;
-				m_RollStartTime = 0;
-			}
-
-			m_RollCenter = Vector3.zero;
-			for (int i = m_Selections.Length; --i >= 0;)
-			{
-				GameObject cube = m_Selections[i];
-				
-				m_RollCenter += cube.transform.position;
-			}
-			m_RollCenter /= m_Selections.Length;
-
-			for (int i = m_Selections.Length; --i >= 0;)
-			{
-				GameObject cube = m_Selections[i];
-				
-				cube.transform.localPosition = m_RollPositions[i];
-				cube.transform.localEulerAngles = m_RollEulerAngles[i];
-				cube.transform.RotateAround(m_RollCenter, ParseAxis(m_RollAxis), angle);
-			}
 		}
 	}
 
