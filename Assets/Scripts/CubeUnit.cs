@@ -4,7 +4,8 @@ public sealed class CubeUnit : MonoBehaviour
 {
 	public Vector3 grids;
 	public int layer;
-	public Material material;
+	public Renderer renderer { get; private set; }
+	public Material material { get; private set; }
 	public Color color
 	{
 		get { return material.color; }
@@ -13,6 +14,7 @@ public sealed class CubeUnit : MonoBehaviour
 
 	private void Awake()
 	{
-		material = GetComponent<Renderer>().material;
+		renderer = GetComponent<Renderer>();
+		material = renderer.material;
 	}
 }

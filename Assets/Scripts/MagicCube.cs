@@ -140,8 +140,9 @@ public sealed class MagicCube : MonoBehaviour
 	private void UpdateCamera(float deltaTime)
 	{
 		Vector3 position = Vector3.back * (layer + 1) * m_Distance * viewDistance;
+		position = Vector3.Lerp(camera.transform.position, position, viewLerp * deltaTime);
 
-		camera.transform.position = Vector3.Lerp(camera.transform.position, position, viewLerp * deltaTime);
+		camera.transform.position = position;
 	}
 
 	private void OnInputEvent(InputEvent evt)
@@ -197,10 +198,10 @@ public sealed class MagicCube : MonoBehaviour
 		else if (m_ViewInputId == evt.inputId)
 		{
 			Vector3 deltaPosition = evt.deltaPosition;
-			deltaPosition /= Screen.dpi * Time.deltaTime;
+			deltaPosition /= Screen.dpi;
 			
-			transform.Rotate(camera.transform.up, -deltaPosition.x * viewSensitivity * evt.deltaTime, Space.World);
-			transform.Rotate(camera.transform.right, deltaPosition.y * viewSensitivity * evt.deltaTime, Space.World);
+			transform.Rotate(camera.transform.up, -deltaPosition.x * viewSensitivity, Space.World);
+			transform.Rotate(camera.transform.right, deltaPosition.y * viewSensitivity, Space.World);
 		}
 	}
 
@@ -223,25 +224,32 @@ public sealed class MagicCube : MonoBehaviour
 	public void SetLayer(int value)
 	{
 		value = Mathf.Clamp(value, 0, maxLayer);
-		if (value == layer)
+		if (value == this.layer)
 		{
 			return;
 		}
+		
+		this.layer = value;
 
-		foreach (int l in m_CubeDict.Keys)
+		float time = 1 / viewLerp;
+		foreach (int layer in m_CubeDict.Keys)
 		{
-			List<CubeUnit> cubeList = m_CubeDict[l];
-			bool enable = l == value;
+			List<CubeUnit> cubeList = m_CubeDict[layer];
+			bool enable = layer >= value;
 
 			for (int i = cubeList.Count; --i >= 0;)
 			{
 				CubeUnit cube = cubeList[i];
 
-				cube.GetComponent<Renderer>().enabled = enable;
+				cube.renderer.enabled = enable;
+				if (enable)
+				{
+					Color color = cube.color;
+					color.a = layer == value ? 1 : 0;
+					iTween.ColorTo(cube.gameObject, color, time);
+				}
 			}
 		}
-
-		layer = value;
 	}
 
 	private void RollCubes(Vector3 direction)
