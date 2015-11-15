@@ -87,6 +87,7 @@ public sealed class MagicCube : MonoBehaviour
 	private void Update()
 	{
 		UpdateRoll(Time.deltaTime);
+		UpdateColor(Time.deltaTime);
 		UpdateCamera(Time.deltaTime);
 	}
 
@@ -134,6 +135,22 @@ public sealed class MagicCube : MonoBehaviour
 			m_RollStartTime = int.MinValue;
 			m_SelectCube = null;
 			m_RollCubes = null;
+		}
+	}
+
+	private void UpdateColor(float deltaTime)
+	{
+		for (int i = maxLayer + 1; --i > layer;)
+		{
+			foreach (CubeUnit cube in m_CubeDict[i])
+			{
+				if (!cube.renderer.enabled)
+				{
+					continue;
+				}
+
+				cube.renderer.enabled = cube.color.a > 0;
+			}
 		}
 	}
 
