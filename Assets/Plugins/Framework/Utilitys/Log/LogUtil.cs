@@ -120,6 +120,11 @@ namespace Framework
 
 		private void OnGUI()
 		{
+			if (0 >= m_LogQue.Count)
+			{
+				return;
+			}
+
 			string text = string.Empty;
 			foreach (string log in m_LogQue)
 			{
