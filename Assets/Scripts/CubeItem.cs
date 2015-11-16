@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-public sealed class CubeUnit : MonoBehaviour
+public sealed class CubeItem : MonoBehaviour
 {
 	public Vector3 grids;
 	public int layer;

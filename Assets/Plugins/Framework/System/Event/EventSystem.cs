@@ -4,7 +4,7 @@
 	{
 		public delegate void EventCallback(T arg);
 
-		public EventCallback onEventCallback { get; private set; }
+		public event EventCallback onEventCallback;
 
 		public static void Broadcast(T arg)
 		{
