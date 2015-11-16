@@ -20,15 +20,15 @@ public sealed class MagicCube : MonoBehaviour
 
 	public Camera camera;
 	public GameObject cubePrefab;
-	public int step;
-	public float size;
-	public float space;
+	public int step = 5;
+	public float size = 1;
+	public float space = 0.05f;
 	public float rollError = 0;
-	public float rollTime = 1;
+	public float rollTime = 0.5f;
 	public float viewDistance = 4;
-	public float viewLerp = 10;
+	public float viewLerp = 2;
 	public float viewSensitivity = 50;
-	public float colorTime = 1;
+	public float colorTime = 0.5f;
 	
 	public int layer { get; private set; }
 	public int lastLayer { get; private set; }
