@@ -8,6 +8,7 @@ namespace Framework
 		
 		public TimerUtil.TimerCallback onTimerCallback { get; private set; }
 		public TimerUtil.TimerWithArgsCallback onTimerWithArgsCallback { get; private set; }
+		public float repeatRate { get; private set; }
 		public int repeatTimes { get; private set; }
 		public object args { get; private set; }
 
@@ -17,6 +18,7 @@ namespace Framework
 		                       int repeatTimes)
 		{
 			this.onTimerCallback = onTimerCallback;
+			this.repeatRate = repeatRate;
 			this.repeatTimes = repeatTimes;
 			
 			if (repeatRate > 0)
@@ -36,6 +38,7 @@ namespace Framework
 		                  object args)
 		{
 			this.onTimerWithArgsCallback = onTimerWithArgsCallback;
+			this.repeatRate = repeatRate;
 			this.repeatTimes = repeatTimes;
 			this.args = args;
 			
@@ -66,7 +69,11 @@ namespace Framework
 				onTimerWithArgsCallback(args);
 			}
 			
-			if (repeatTimes > 0)
+			if (repeatRate <= 0)
+			{
+				Stop();
+			}
+			else if (repeatTimes > 0)
 			{
 				if (--repeatTimes <= 0)
 				{

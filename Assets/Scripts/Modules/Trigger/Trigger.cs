@@ -10,31 +10,49 @@ public class Trigger : MonoBehaviour
 
 	protected virtual void OnTriggerEnter(Collider collider)
 	{
-		onTriggerEnter(collider);
+		if (null != onTriggerEnter)
+		{
+			onTriggerEnter(collider);
+		}
 	}
 
 	protected virtual void OnTriggerStay(Collider collider)
 	{
-		onTriggerStay(collider);
+		if (null != onTriggerStay)
+		{
+			onTriggerStay(collider);
+		}
 	}
 
 	protected virtual void OnTriggerExit(Collider collider)
 	{
-		onTriggerExit(collider);
+		if (null != onTriggerExit)
+		{
+			onTriggerExit(collider);
+		}
 	}
 	
 	protected virtual void OnCollisionEnter(Collision collision)
 	{
-		onTriggerEnter(collision.collider);
+		if (null != onTriggerEnter)
+		{
+			onTriggerEnter(collision.collider);
+		}
 	}
 	
 	protected virtual void OnCollisionStay(Collision collision)
 	{
-		onTriggerStay(collision.collider);
+		if (null != onTriggerStay)
+		{
+			onTriggerStay(collision.collider);
+		}
 	}
 	
 	protected virtual void OnCollisionExit(Collision collision)
 	{
-		onTriggerExit(collision.collider);
+		if (null != onTriggerExit)
+		{
+			onTriggerExit(collision.collider);
+		}
 	}
 }
