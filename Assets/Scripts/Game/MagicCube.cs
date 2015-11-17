@@ -34,12 +34,11 @@ public sealed class MagicCube : MonoBehaviour
 	public int layer { get; private set; }
 	public int lastLayer { get; private set; }
 	public int maxLayer { get; private set; }
-	public bool isRolling { get { return 0 < m_RollStartTime; } }
+	public bool isRolling { get { return null != m_RollTimer; } }
 	
 	private Dictionary<int, List<CubeItem>> m_CubeDict = new Dictionary<int, List<CubeItem>>();
 	private Dictionary<CubeItem, SelectCube> m_SelectDict = new Dictionary<CubeItem, SelectCube>();
 	private TimerBehaviour m_RollTimer;
-	private float m_RollStartTime = int.MinValue;
 
 	private void Awake()
 	{
@@ -96,9 +95,10 @@ public sealed class MagicCube : MonoBehaviour
 		SetLayer(maxLayer);
 	}
 
-	private void OnRollTimer()
+	private void OnRollTimer(params object[] args)
 	{
-		float progress = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
+		float startTime = (float)args[0];
+		float progress = Mathf.Clamp01((Time.time - startTime) / rollTime);
 		float angle = rollAngle * progress;
 		
 		Vector3 center = Vector3.zero;
@@ -271,7 +271,6 @@ public sealed class MagicCube : MonoBehaviour
 	private void StopRoll()
 	{
 		m_RollTimer.Stop();
-		m_RollStartTime = int.MinValue;
 		m_SelectDict.Clear();
 	}
 	
@@ -304,8 +303,7 @@ public sealed class MagicCube : MonoBehaviour
 		int num = step * step;
 		if (num <= m_SelectDict.Count)
 		{
-			m_RollStartTime = Time.time;
-			m_RollTimer = TimerUtil.Begin(OnRollTimer, 0, Time.deltaTime);
+			m_RollTimer = TimerUtil.Begin(OnRollTimer, 0, Time.fixedDeltaTime, 0, Time.time);
 			triggerCollider.gameObject.SetActive(false);
 		}
 	}

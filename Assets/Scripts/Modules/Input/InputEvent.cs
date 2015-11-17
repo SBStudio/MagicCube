@@ -14,5 +14,6 @@ public sealed class InputEvent
 	public Vector2 lastPosition;
 	public Vector2 position;
 	public Vector2 deltaPosition;
+	public float time;
 	public float deltaTime;
 }
