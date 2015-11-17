@@ -11,6 +11,20 @@ namespace Framework
 		public IState globalState { get; private set; }
 		public IState state { get; private set; }
 		public IState prevState { get; private set; }
+		
+		private void OnGUI()
+		{
+			if (null != globalState)
+			{
+				globalState.OnGUI();
+			}
+			
+			if (null != state)
+			{
+				
+				state.OnGUI();
+			}
+		}
 
 		private void Update()
 		{
@@ -50,20 +64,6 @@ namespace Framework
 			{
 				
 				state.OnFixedUpdate();
-			}
-		}
-
-		private void OnGUI()
-		{
-			if (null != globalState)
-			{
-				globalState.OnGUI();
-			}
-
-			if (null != state)
-			{
-				
-				state.OnGUI();
 			}
 		}
 

@@ -2,6 +2,10 @@
 
 public abstract class ScriptableBehaviour : ScriptableObject
 {
+	public virtual void OnGUI()
+	{
+	}
+
 	public virtual void OnUpdate()
 	{
 	}
@@ -11,10 +15,6 @@ public abstract class ScriptableBehaviour : ScriptableObject
 	}
 	
 	public virtual void OnFixedUpdate()
-	{
-	}
-	
-	public virtual void OnGUI()
 	{
 	}
 

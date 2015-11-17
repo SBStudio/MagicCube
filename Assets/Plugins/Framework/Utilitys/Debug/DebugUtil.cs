@@ -7,6 +7,14 @@ namespace Framework
 	public sealed class DebugUtil : MonoSingleton<DebugUtil>
 	{
 		private readonly Dictionary<Type, ScriptableBehaviour> m_DebugInfoDict = new Dictionary<Type, ScriptableBehaviour>();
+		
+		private void OnGUI()
+		{
+			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
+			{
+				debugInfo.OnGUI();
+			}
+		}
 
 		private void Update()
 		{
@@ -29,14 +37,6 @@ namespace Framework
 			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
 			{
 				debugInfo.OnFixedUpdate();
-			}
-		}
-
-		private void OnGUI()
-		{
-			foreach (ScriptableBehaviour debugInfo in m_DebugInfoDict.Values)
-			{
-				debugInfo.OnGUI();
 			}
 		}
 
