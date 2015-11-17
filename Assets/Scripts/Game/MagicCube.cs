@@ -26,19 +26,47 @@ public sealed class MagicCube : MonoBehaviour
 	public float rollError = 0;
 	public float rollTime = 0.5f;
 	public float colorTime = 0.5f;
-	
-	public BoxCollider triggerCollider { get; private set; }
+
 	public Axis rollAxis { get; private set; }
 	public float rollAngle { get; private set; }
 	public float distance { get; private set; }
 	public int layer { get; private set; }
 	public int lastLayer { get; private set; }
 	public int maxLayer { get; private set; }
-	public bool isRolling { get { return null != m_RollTimer; } }
+	public bool isHitTesting { get { return m_TriggerCollider.gameObject.activeSelf; } }
+	public bool isRolling { get { return 0 < m_RollStartTime; } }
 	
-	private Dictionary<int, List<CubeItem>> m_CubeDict = new Dictionary<int, List<CubeItem>>();
+	private List<CubeItem>[] m_CubeLists = null;
 	private Dictionary<CubeItem, SelectCube> m_SelectDict = new Dictionary<CubeItem, SelectCube>();
-	private TimerBehaviour m_RollTimer;
+	private BoxCollider m_TriggerCollider = null;
+	private float m_RollStartTime = int.MinValue;
+
+	public bool enableCollision
+	{
+		get { return m_EnableCollision; }
+		set
+		{
+			if (m_EnableCollision == value
+			    || isHitTesting)
+			{
+				return;
+			}
+
+			m_EnableCollision = value;
+
+			for (int i = m_CubeLists.Length; --i >= 0;)
+			{
+				List<CubeItem> cubeList = m_CubeLists[i];
+				for (int j = cubeList.Count; --j >= 0;)
+				{
+					CubeItem cube = cubeList[j];
+
+					cube.collider.enabled = value;
+				}
+			}
+		}
+	}
+	private bool m_EnableCollision = false;
 
 	private void Awake()
 	{
@@ -49,8 +77,8 @@ public sealed class MagicCube : MonoBehaviour
 		Trigger trigger = gameObject.AddComponent<Trigger>();
 		trigger.onTriggerEnter += OnCubeTrigger;
 
-		triggerCollider = gameObject.AddComponent<BoxCollider>();
-		triggerCollider.isTrigger = true;
+		m_TriggerCollider = gameObject.AddComponent<BoxCollider>();
+		m_TriggerCollider.isTrigger = true;
 
 		Rigidbody rigidBody = gameObject.AddComponent<Rigidbody>();
 		rigidBody.isKinematic = true;
@@ -62,7 +90,8 @@ public sealed class MagicCube : MonoBehaviour
 		float offset = (1 - step) * 0.5f;
 		
 		maxLayer = (step - 1) / 2;
-		
+
+		m_CubeLists = new List<CubeItem>[maxLayer + 1];
 		int num = step * step * step;
 		for (int i = num; --i >= 0;)
 		{
@@ -82,23 +111,33 @@ public sealed class MagicCube : MonoBehaviour
 			cube.grids = grids;
 			cube.layer = layer;
 			cube.collider.size = Vector3.one * (1 + space);
+			cube.collider.enabled = false;
 			cube.renderer.enabled = false;
 			cube.color = GetColor();
 			
-			if (!m_CubeDict.ContainsKey(layer))
+			if (null == m_CubeLists[layer])
 			{
-				m_CubeDict[layer] = new List<CubeItem>();
+				m_CubeLists[layer] = new List<CubeItem>();
 			}
-			m_CubeDict[layer].Add(cube);
+			m_CubeLists[layer].Add(cube);
 		}
 		
 		SetLayer(maxLayer);
 	}
 
-	private void OnRollTimer(params object[] args)
+	private void Update()
 	{
-		float startTime = (float)args[0];
-		float progress = Mathf.Clamp01((Time.time - startTime) / rollTime);
+		OnUpdateRoll(Time.deltaTime);
+	}
+
+	private void OnUpdateRoll(float deltaTime)
+	{
+		if (!isRolling)
+		{
+			return;
+		}
+
+		float progress = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
 		float angle = rollAngle * progress;
 		
 		Vector3 center = Vector3.zero;
@@ -132,9 +171,9 @@ public sealed class MagicCube : MonoBehaviour
 		lastLayer = layer;
 		layer = value;
 
-		TimerUtil.Begin(OnColorTimeout, colorTime);
+		TimerUtil.Begin(OnColorFadeout, colorTime);
 
-		List<CubeItem> cubeList = m_CubeDict[lastLayer];
+		List<CubeItem> cubeList = m_CubeLists[lastLayer];
 		for (int i = cubeList.Count; --i >= 0;)
 		{
 			CubeItem cube = cubeList[i];
@@ -144,7 +183,7 @@ public sealed class MagicCube : MonoBehaviour
 			iTween.ColorTo(cube.gameObject, color, colorTime);
 		}
 		
-		cubeList = m_CubeDict[layer];
+		cubeList = m_CubeLists[layer];
 		for (int i = cubeList.Count; --i >= 0;)
 		{
 			CubeItem cube = cubeList[i];
@@ -218,15 +257,17 @@ public sealed class MagicCube : MonoBehaviour
 
 	public void SelectCubes(CubeItem cube, Axis right, Axis up, Axis forward)
 	{
-		triggerCollider.gameObject.SetActive(false);
-		triggerCollider.transform.position = cube.transform.position;
-		triggerCollider.transform.forward = Axis2Direction(forward);
-		triggerCollider.transform.right = Axis2Direction(right);
-		triggerCollider.transform.up = Axis2Direction(up);
+		m_TriggerCollider.gameObject.SetActive(false);
+		enableCollision = true;
+
+		m_TriggerCollider.transform.position = cube.transform.position;
+		m_TriggerCollider.transform.forward = Axis2Direction(forward);
+		m_TriggerCollider.transform.right = Axis2Direction(right);
+		m_TriggerCollider.transform.up = Axis2Direction(up);
 
 		float size = step * distance * 4;
-		triggerCollider.size = new Vector3(size, this.size, size);
-		triggerCollider.gameObject.SetActive(true);
+		m_TriggerCollider.size = new Vector3(size, this.size, size);
+		m_TriggerCollider.gameObject.SetActive(true);
 	}
 
 	public Vector3 Axis2Direction(Axis axis)
@@ -257,9 +298,9 @@ public sealed class MagicCube : MonoBehaviour
 		return Axis.FORWARD;
 	}
 	
-	private void OnColorTimeout()
+	private void OnColorFadeout()
 	{
-		List<CubeItem> cubeList = m_CubeDict[lastLayer];
+		List<CubeItem> cubeList = m_CubeLists[lastLayer];
 		for (int i = cubeList.Count; --i >= 0;)
 		{
 			CubeItem cube = cubeList[i];
@@ -270,7 +311,7 @@ public sealed class MagicCube : MonoBehaviour
 	
 	private void StopRoll()
 	{
-		m_RollTimer.Stop();
+		m_RollStartTime = int.MinValue;
 		m_SelectDict.Clear();
 	}
 	
@@ -303,8 +344,9 @@ public sealed class MagicCube : MonoBehaviour
 		int num = step * step;
 		if (num <= m_SelectDict.Count)
 		{
-			m_RollTimer = TimerUtil.Begin(OnRollTimer, 0, Time.fixedDeltaTime, 0, Time.time);
-			triggerCollider.gameObject.SetActive(false);
+			m_TriggerCollider.gameObject.SetActive(false);
+			enableCollision = false;
+			m_RollStartTime = Time.time;
 		}
 	}
 	

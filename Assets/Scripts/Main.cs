@@ -20,7 +20,7 @@ public sealed class Main : MonoBehaviour
 		LogUtil.printType = LogUtil.PrintType.Screen;
 		EventSystem<InputEvent>.Add(OnInputEvent);
 		InputModule inputModule = InputModule.instance;
-		Application.targetFrameRate = 60;
+		Application.targetFrameRate = GameDefine.FPS;
 		
 		if (null == camera)
 		{
@@ -47,11 +47,10 @@ public sealed class Main : MonoBehaviour
 
 	private void Update()
 	{
-		
-		UpdateCamera(Time.deltaTime);
+		OnUpdateCamera(Time.deltaTime);
 	}
 	
-	private void UpdateCamera(float deltaTime)
+	private void OnUpdateCamera(float deltaTime)
 	{
 		Vector3 position = Vector3.back * (m_MagicCube.layer + 1) * m_MagicCube.distance * viewDistance;
 		position = Vector3.Lerp(camera.transform.position, position, viewLerp * deltaTime);
@@ -77,12 +76,15 @@ public sealed class Main : MonoBehaviour
 	
 	private void OnInputStart(InputEvent evt)
 	{
+		m_MagicCube.enableCollision = true;
 		CubeItem selectCube = null;
 		Ray ray = camera.ScreenPointToRay(evt.position);
 		RaycastHit[] raycastHits = Physics.RaycastAll(ray,
 		                                              Mathf.Abs(camera.transform.position.z),
 		                                              1 << LayerDefine.CUBE,
 		                                              QueryTriggerInteraction.Collide);
+		m_MagicCube.enableCollision = false;
+
 		for (int i = 0; i < raycastHits.Length; ++i)
 		{
 			RaycastHit raycastHit = raycastHits[i];
