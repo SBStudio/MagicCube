@@ -5,7 +5,7 @@ namespace Framework
 	public sealed class TimerUtil : MonoSingleton<TimerUtil>
 	{
 		public delegate void TimerCallback();
-		public delegate void TimerWithArgsCallback(object args);
+		public delegate void TimerWithArgsCallback(params object[] args);
 
 		public static TimerBehaviour Begin(TimerCallback onTimerCallback,
 		                                   float starTime)
@@ -61,7 +61,7 @@ namespace Framework
 		                                   float startTime,
 		                                   float repeatRate,
 		                                   int repeatTimes,
-		                                   object args)
+		                                   params object[] args)
 		{
 			if (null == onTimerWithArgsCallback)
 			{

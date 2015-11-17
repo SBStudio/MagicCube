@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Framework;
+using System.Collections;
 using System.Collections.Generic;
 
 public sealed class MagicCube : MonoBehaviour
@@ -37,6 +38,7 @@ public sealed class MagicCube : MonoBehaviour
 	
 	private Dictionary<int, List<CubeItem>> m_CubeDict = new Dictionary<int, List<CubeItem>>();
 	private Dictionary<CubeItem, SelectCube> m_SelectDict = new Dictionary<CubeItem, SelectCube>();
+	private TimerBehaviour m_RollTimer;
 	private float m_RollStartTime = int.MinValue;
 
 	private void Awake()
@@ -93,21 +95,11 @@ public sealed class MagicCube : MonoBehaviour
 		
 		SetLayer(maxLayer);
 	}
-	
-	private void Update()
-	{
-		UpdateRoll(Time.deltaTime);
-	}
 
-	private void UpdateRoll(float deltaTime)
+	private void OnRollTimer()
 	{
-		if (!isRolling)
-		{
-			return;
-		}
-
-		deltaTime = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
-		float angle = rollAngle * deltaTime;
+		float progress = Mathf.Clamp01((Time.time - m_RollStartTime) / rollTime);
+		float angle = rollAngle * progress;
 		
 		Vector3 center = Vector3.zero;
 		foreach (SelectCube select in m_SelectDict.Values)
@@ -123,7 +115,7 @@ public sealed class MagicCube : MonoBehaviour
 			select.Key.transform.RotateAround(center, Axis2Direction(rollAxis), angle);
 		}
 		
-		if (1 <= deltaTime)
+		if (1 <= progress)
 		{
 			StopRoll();
 		}
@@ -278,6 +270,7 @@ public sealed class MagicCube : MonoBehaviour
 	
 	private void StopRoll()
 	{
+		m_RollTimer.Stop();
 		m_RollStartTime = int.MinValue;
 		m_SelectDict.Clear();
 	}
@@ -312,6 +305,7 @@ public sealed class MagicCube : MonoBehaviour
 		if (num <= m_SelectDict.Count)
 		{
 			m_RollStartTime = Time.time;
+			m_RollTimer = TimerUtil.Begin(OnRollTimer, 0, Time.deltaTime);
 			triggerCollider.gameObject.SetActive(false);
 		}
 	}

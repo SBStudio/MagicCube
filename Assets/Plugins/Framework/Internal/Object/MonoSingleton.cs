@@ -24,7 +24,7 @@ namespace Framework
 
 			if (null == instance)
 			{
-				string name = typeof(T).ToString();
+				string name = typeof(T).Name + "(Single)";
 				instance = new GameObject(name).AddComponent<T>();
 			}
 
