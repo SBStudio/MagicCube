@@ -19,7 +19,6 @@ public sealed class MagicCube : MonoBehaviour
 		public Quaternion rotation;
 	}
 
-	public GameObject cubePrefab;
 	public int step = 5;
 	public float size = 1;
 	public float space = 0.05f;
@@ -102,7 +101,8 @@ public sealed class MagicCube : MonoBehaviour
 			Vector3 position = grids * distance;
 			int layer = (int)Mathf.Max(Mathf.Abs(grids.x), Mathf.Abs(grids.y), Mathf.Abs(grids.z));
 			
-			CubeItem cube = Instantiate(cubePrefab).AddComponent<CubeItem>();
+			GameObject gameObject = Resources.Load<GameObject>(ResourceDefine.CUBE_ITEM);
+			CubeItem cube = Instantiate(gameObject).AddComponent<CubeItem>();
 			cube.name = i.ToString();
 			cube.gameObject.layer = LayerDefine.CUBE;
 			cube.transform.parent = transform;
@@ -266,7 +266,7 @@ public sealed class MagicCube : MonoBehaviour
 		m_TriggerCollider.transform.up = Axis2Direction(up);
 
 		float size = step * distance * 4;
-		m_TriggerCollider.size = new Vector3(size, this.size, size);
+		m_TriggerCollider.size = new Vector3(size, distance * 0.5f, size);
 		m_TriggerCollider.gameObject.SetActive(true);
 	}
 

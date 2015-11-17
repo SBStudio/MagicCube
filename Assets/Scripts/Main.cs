@@ -4,7 +4,6 @@ using Framework;
 public sealed class Main : MonoBehaviour
 {
 	public Camera camera;
-	public GameObject prefab;
 	public float viewDistance = 4;
 	public float viewLerp = 2;
 	public float viewSensitivity = 50;
@@ -27,7 +26,8 @@ public sealed class Main : MonoBehaviour
 			camera = Camera.main;
 		}
 
-		m_MagicCube = Instantiate(prefab).GetComponent<MagicCube>();
+		GameObject gameObject = Resources.Load<GameObject>(ResourceDefine.MAGIC_CUBE);
+		m_MagicCube = Instantiate(gameObject).GetComponent<MagicCube>();
 	}
 
 	private void Start()
