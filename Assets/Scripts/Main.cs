@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Framework;
+using System.Collections.Generic;
 
 public sealed class Main : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public sealed class Main : MonoBehaviour
 
 	private MagicCube m_MagicCube;
 	private CubeItem m_SelectCube;
+	private Player m_Player;
+
 	private int m_RollInputId = int.MinValue;
 	private int m_ViewInputId = int.MinValue;
 
@@ -26,12 +29,20 @@ public sealed class Main : MonoBehaviour
 			camera = Camera.main;
 		}
 
-		GameObject gameObject = Resources.Load<GameObject>(ResourceDefine.MAGIC_CUBE);
-		m_MagicCube = Instantiate(gameObject).GetComponent<MagicCube>();
+		GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.MAGIC_CUBE));
+		m_MagicCube = gameObject.GetComponent<MagicCube>() ?? gameObject.AddComponent<MagicCube>();
+
+		gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.PLAYER));
+		m_Player = gameObject.GetComponent<Player>() ?? gameObject.AddComponent<Player>();
 	}
 
 	private void Start()
 	{
+		m_MagicCube.Init();
+
+		List<CubeItem> cubeList = m_MagicCube[m_MagicCube.layer];
+		CubeItem cube = cubeList[Random.Range(0, cubeList.Count)];
+		m_Player.SetCube(cube);
 	}
 	
 	private void OnGUI()
@@ -78,6 +89,7 @@ public sealed class Main : MonoBehaviour
 	{
 		m_MagicCube.enableCollision = true;
 		CubeItem selectCube = null;
+
 		Ray ray = camera.ScreenPointToRay(evt.position);
 		RaycastHit[] raycastHits = Physics.RaycastAll(ray,
 		                                              Mathf.Abs(camera.transform.position.z),
@@ -89,12 +101,20 @@ public sealed class Main : MonoBehaviour
 		{
 			RaycastHit raycastHit = raycastHits[i];
 			CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
-			if (null != cube
-			    && cube.layer == m_MagicCube.layer)
+			if (null == cube
+			    || cube.layer != m_MagicCube.layer)
+			{
+				continue;
+			}
+
+			if (null == selectCube)
 			{
 				selectCube = cube;
-				
-				break;
+			}
+			else if (Vector3.Distance(ray.origin, selectCube.transform.position)
+			         > Vector3.Distance(ray.origin, cube.transform.position))
+			{
+				selectCube = cube;
 			}
 		}
 		

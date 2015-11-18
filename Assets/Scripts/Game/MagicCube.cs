@@ -5,13 +5,6 @@ using System.Collections.Generic;
 
 public sealed class MagicCube : MonoBehaviour
 {
-	public enum Axis
-	{
-		RIGHT,
-		UP,
-		FORWARD,
-	}
-
 	private struct SelectCube
 	{
 		public CubeItem cube;
@@ -26,7 +19,7 @@ public sealed class MagicCube : MonoBehaviour
 	public float rollTime = 0.5f;
 	public float colorTime = 0.5f;
 
-	public Axis rollAxis { get; private set; }
+	public CubeAxis.Axis rollAxis { get; private set; }
 	public float rollAngle { get; private set; }
 	public float distance { get; private set; }
 	public int layer { get; private set; }
@@ -39,6 +32,11 @@ public sealed class MagicCube : MonoBehaviour
 	private Dictionary<CubeItem, SelectCube> m_SelectDict = new Dictionary<CubeItem, SelectCube>();
 	private BoxCollider m_TriggerCollider = null;
 	private float m_RollStartTime = int.MinValue;
+
+	public List<CubeItem> this[int layer]
+	{
+		get { return m_CubeLists[layer]; }
+	}
 
 	public bool enableCollision
 	{
@@ -83,7 +81,7 @@ public sealed class MagicCube : MonoBehaviour
 		rigidBody.isKinematic = true;
 	}
 
-	private void Start()
+	public void Init()
 	{
 		distance = size + space;
 		float offset = (1 - step) * 0.5f;
@@ -101,8 +99,8 @@ public sealed class MagicCube : MonoBehaviour
 			Vector3 position = grids * distance;
 			int layer = (int)Mathf.Max(Mathf.Abs(grids.x), Mathf.Abs(grids.y), Mathf.Abs(grids.z));
 			
-			GameObject gameObject = Resources.Load<GameObject>(ResourceDefine.CUBE_ITEM);
-			CubeItem cube = Instantiate(gameObject).AddComponent<CubeItem>();
+			GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.CUBE_ITEM));
+			CubeItem cube = gameObject.AddComponent<CubeItem>();
 			cube.name = i.ToString();
 			cube.gameObject.layer = LayerDefine.CUBE;
 			cube.transform.parent = transform;
@@ -151,7 +149,7 @@ public sealed class MagicCube : MonoBehaviour
 		{
 			select.Key.transform.localPosition = select.Value.position;
 			select.Key.transform.localRotation = select.Value.rotation;
-			select.Key.transform.RotateAround(center, Axis2Direction(rollAxis), angle);
+			select.Key.transform.RotateAround(center, CubeAxis.Axis2Direction(transform, rollAxis), angle);
 		}
 		
 		if (1 <= progress)
@@ -204,9 +202,9 @@ public sealed class MagicCube : MonoBehaviour
 		}
 		
 		Vector3 direction = deltaPosition.normalized;
-		Axis right, up, forward;
+		CubeAxis.Axis right, up, forward;
 
-		GetRollAxis(direction, out right, out up, out forward);
+		CubeAxis.GetRollAxis(transform, direction, out right, out up, out forward);
 		SelectCubes(cube, right, up, forward);
 
 		rollAxis = up;
@@ -214,90 +212,35 @@ public sealed class MagicCube : MonoBehaviour
 		bool isHorizontal = Mathf.Abs(direction.x) > Mathf.Abs(direction.y);
 		if (isHorizontal)
 		{
-			rollAngle = (direction.x * Axis2Direction(up).y) > 0 ? -90 : 90;
+			rollAngle = (direction.x * CubeAxis.Axis2Direction(transform, up).y) > 0 ? -90 : 90;
 		}
 		else
 		{
-			rollAngle = (direction.y * Axis2Direction(up).x) > 0 ? 90 : -90;
+			rollAngle = (direction.y * CubeAxis.Axis2Direction(transform, up).x) > 0 ? 90 : -90;
 		}
 	}
 
-	public void GetRollAxis(Vector3 direction, out Axis right, out Axis up, out Axis forward)
-	{
-		Vector3 r = Vector3.zero, u = Vector3.zero, f = Vector3.zero;
-		List<Vector3> axisList = new List<Vector3>()
-		{
-			transform.right,
-			transform.up,
-			transform.forward
-		};
-		
-		for (int i = axisList.Count; --i >= 0;)
-		{
-			float project1 = Vector3.Project(direction, r).magnitude;
-			float project2 = Vector3.Project(direction, axisList[i]).magnitude;
-			r = project1 > project2 ? r : axisList[i];
-		}
-		axisList.Remove(r);
-		
-		for (int i = axisList.Count; --i >= 0;)
-		{
-			float project1 = Vector3.Project(Vector3.forward, f).magnitude;
-			float project2 = Vector3.Project(Vector3.forward, axisList[i]).magnitude;
-			f = project1 > project2 ? f : axisList[i];
-		}
-		axisList.Remove(f);
-		
-		u = axisList[0];
-
-		right = Direction2Axis(r);
-		up = Direction2Axis(u);
-		forward = Direction2Axis(f);
-	}
-
-	public void SelectCubes(CubeItem cube, Axis right, Axis up, Axis forward)
+	private void SelectCubes(CubeItem cube, CubeAxis.Axis right, CubeAxis.Axis up, CubeAxis.Axis forward)
 	{
 		m_TriggerCollider.gameObject.SetActive(false);
 		enableCollision = true;
 
 		m_TriggerCollider.transform.position = cube.transform.position;
-		m_TriggerCollider.transform.forward = Axis2Direction(forward);
-		m_TriggerCollider.transform.right = Axis2Direction(right);
-		m_TriggerCollider.transform.up = Axis2Direction(up);
+		m_TriggerCollider.transform.forward = CubeAxis.Axis2Direction(transform, forward);
+		m_TriggerCollider.transform.right = CubeAxis.Axis2Direction(transform, right);
+		m_TriggerCollider.transform.up = CubeAxis.Axis2Direction(transform, up);
 
 		float size = step * distance * 4;
 		m_TriggerCollider.size = new Vector3(size, distance * 0.5f, size);
 		m_TriggerCollider.gameObject.SetActive(true);
 	}
-
-	public Vector3 Axis2Direction(Axis axis)
-	{
-		if (Axis.RIGHT == axis)
-		{
-			return transform.right;
-		}
-		else if (Axis.UP == axis)
-		{
-			return transform.up;
-		}
-
-		return transform.forward;
-	}
-
-	public Axis Direction2Axis(Vector3 direction)
-	{
-		if (transform.right == direction)
-		{
-			return Axis.RIGHT;
-		}
-		else if (transform.up == direction)
-		{
-			return Axis.UP;
-		}
-		
-		return Axis.FORWARD;
-	}
 	
+	private void StopRoll()
+	{
+		m_RollStartTime = int.MinValue;
+		m_SelectDict.Clear();
+	}
+
 	private void OnColorFadeout()
 	{
 		List<CubeItem> cubeList = m_CubeLists[lastLayer];
@@ -308,29 +251,7 @@ public sealed class MagicCube : MonoBehaviour
 			cube.renderer.enabled = false;
 		}
 	}
-	
-	private void StopRoll()
-	{
-		m_RollStartTime = int.MinValue;
-		m_SelectDict.Clear();
-	}
-	
-	private void AddCube(CubeItem cube)
-	{
-		if (null == cube
-		    || m_SelectDict.ContainsKey(cube))
-		{
-			return;
-		}
-		
-		SelectCube select = new MagicCube.SelectCube();
-		select.cube = cube;
-		select.position = cube.transform.localPosition;
-		select.rotation = cube.transform.localRotation;
-		
-		m_SelectDict[cube] = select;
-	}
-	
+
 	private void OnCubeTrigger(Collider collider)
 	{
 		CubeItem cube = collider.GetComponent<CubeItem>();
@@ -349,7 +270,23 @@ public sealed class MagicCube : MonoBehaviour
 			m_RollStartTime = Time.time;
 		}
 	}
-	
+
+	private void AddCube(CubeItem cube)
+	{
+		if (null == cube
+		    || m_SelectDict.ContainsKey(cube))
+		{
+			return;
+		}
+		
+		SelectCube select = new MagicCube.SelectCube();
+		select.cube = cube;
+		select.position = cube.transform.localPosition;
+		select.rotation = cube.transform.localRotation;
+		
+		m_SelectDict[cube] = select;
+	}
+
 	private Color GetColor()
 	{
 		return new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), 0);
