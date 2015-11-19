@@ -106,18 +106,33 @@ public sealed class MagicCube : MonoBehaviour
 			cube.transform.parent = transform;
 			cube.transform.localPosition = position;
 			cube.transform.localScale = Vector3.one * size;
-			cube.grids = grids;
 			cube.layer = layer;
-			cube.collider.size = Vector3.one * (1 + space);
-			cube.collider.enabled = false;
 			cube.renderer.enabled = false;
-			cube.color = GetColor();
+			cube.collider.size = Vector3.one * (1 + space);
 			
 			if (null == m_CubeLists[layer])
 			{
 				m_CubeLists[layer] = new List<CubeItem>();
 			}
 			m_CubeLists[layer].Add(cube);
+		}
+
+		for (int i = m_CubeLists.Length; --i >= 0;)
+		{
+			List<CubeItem> cubeList = m_CubeLists[i];
+			for (int j = cubeList.Count; --j >= 0;)
+			{
+				CubeItem cube = cubeList[j];
+				
+				cube.Init();
+			}
+
+			for (int j = cubeList.Count; --j >= 0;)
+			{
+				CubeItem cube = cubeList[j];
+				
+				cube.collider.enabled = false;
+			}
 		}
 		
 		SetLayer(maxLayer);
@@ -285,10 +300,5 @@ public sealed class MagicCube : MonoBehaviour
 		select.rotation = cube.transform.localRotation;
 		
 		m_SelectDict[cube] = select;
-	}
-
-	private Color GetColor()
-	{
-		return new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), 0);
 	}
 }

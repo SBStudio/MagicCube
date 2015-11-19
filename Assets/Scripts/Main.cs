@@ -42,7 +42,7 @@ public sealed class Main : MonoBehaviour
 
 		List<CubeItem> cubeList = m_MagicCube[m_MagicCube.layer];
 		CubeItem cube = cubeList[Random.Range(0, cubeList.Count)];
-		m_Player.SetCube(cube);
+		m_Player.SetCube(cube, cube.axisList[Random.Range(0, cube.axisList.Count)]);
 	}
 	
 	private void OnGUI()

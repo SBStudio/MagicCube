@@ -5,9 +5,12 @@ public static class CubeAxis
 {
 	public enum Axis
 	{
-		RIGHT,
 		UP,
+		DOWN,
+		LEFT,
+		RIGHT,
 		FORWARD,
+		BACK
 	}
 	
 	public static void GetRollAxis(Transform transform, Vector3 direction, out Axis right, out Axis up, out Axis forward)
@@ -45,29 +48,53 @@ public static class CubeAxis
 	
 	public static Vector3 Axis2Direction(Transform transform, Axis axis)
 	{
-		if (Axis.RIGHT == axis)
-		{
-			return transform.right;
-		}
-		else if (Axis.UP == axis)
+		if (Axis.UP == axis)
 		{
 			return transform.up;
 		}
+		else if (Axis.DOWN == axis)
+		{
+			return -transform.up;
+		}
+		else if (Axis.LEFT == axis)
+		{
+			return -transform.right;
+		}
+		else if (Axis.RIGHT == axis)
+		{
+			return transform.right;
+		}
+		else if (Axis.FORWARD == axis)
+		{
+			return transform.forward;
+		}
 		
-		return transform.forward;
+		return -transform.forward;
 	}
 	
 	public static Axis Direction2Axis(Transform transform, Vector3 direction)
 	{
-		if (transform.right == direction)
-		{
-			return Axis.RIGHT;
-		}
-		else if (transform.up == direction)
+		if (transform.up == direction)
 		{
 			return Axis.UP;
 		}
+		else if (-transform.up == direction)
+		{
+			return Axis.DOWN;
+		}
+		else if (-transform.right == direction)
+		{
+			return Axis.LEFT;
+		}
+		else if (transform.right == direction)
+		{
+			return Axis.RIGHT;
+		}
+		else if (transform.forward == direction)
+		{
+			return Axis.FORWARD;
+		}
 		
-		return Axis.FORWARD;
+		return Axis.BACK;
 	}
 }
