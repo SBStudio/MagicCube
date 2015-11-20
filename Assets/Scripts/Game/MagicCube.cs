@@ -19,7 +19,7 @@ public sealed class MagicCube : MonoBehaviour
 	public float rollTime = 0.5f;
 	public float colorTime = 0.5f;
 
-	public CubeAxis.Axis rollAxis { get; private set; }
+	public AxisType rollAxis { get; private set; }
 	public float rollAngle { get; private set; }
 	public float distance { get; private set; }
 	public int layer { get; private set; }
@@ -164,7 +164,7 @@ public sealed class MagicCube : MonoBehaviour
 		{
 			select.Key.transform.localPosition = select.Value.position;
 			select.Key.transform.localRotation = select.Value.rotation;
-			select.Key.transform.RotateAround(center, CubeAxis.Axis2Direction(transform, rollAxis), angle);
+			select.Key.transform.RotateAround(center, AxisUtil.Axis2Direction(transform, rollAxis), angle);
 		}
 		
 		if (1 <= progress)
@@ -217,33 +217,36 @@ public sealed class MagicCube : MonoBehaviour
 		}
 		
 		Vector3 direction = deltaPosition.normalized;
-		CubeAxis.Axis right, up, forward;
+		AxisType rightAxis, upAxis, forwardAxis;
 
-		CubeAxis.GetRollAxis(transform, direction, out right, out up, out forward);
-		SelectCubes(cube, right, up, forward);
+		AxisUtil.GetRollAxis(transform, direction, out rightAxis, out upAxis, out forwardAxis);
+		SelectCubes(cube, rightAxis, upAxis, forwardAxis);
 
-		rollAxis = up;
+		rollAxis = upAxis;
 		
 		bool isHorizontal = Mathf.Abs(direction.x) > Mathf.Abs(direction.y);
 		if (isHorizontal)
 		{
-			rollAngle = (direction.x * CubeAxis.Axis2Direction(transform, up).y) > 0 ? -90 : 90;
+			rollAngle = (direction.x * AxisUtil.Axis2Direction(transform, upAxis).y) > 0 ? -90 : 90;
 		}
 		else
 		{
-			rollAngle = (direction.y * CubeAxis.Axis2Direction(transform, up).x) > 0 ? 90 : -90;
+			rollAngle = (direction.y * AxisUtil.Axis2Direction(transform, upAxis).x) > 0 ? 90 : -90;
 		}
 	}
 
-	private void SelectCubes(CubeItem cube, CubeAxis.Axis right, CubeAxis.Axis up, CubeAxis.Axis forward)
+	private void SelectCubes(CubeItem cube,
+	                         AxisType rightAxis,
+	                         AxisType upAxis,
+	                         AxisType forwardAxis)
 	{
 		m_TriggerCollider.gameObject.SetActive(false);
 		enableCollision = true;
 
+		m_TriggerCollider.transform.forward = AxisUtil.Axis2Direction(transform, forwardAxis);
+		m_TriggerCollider.transform.right = AxisUtil.Axis2Direction(transform, rightAxis);
+		m_TriggerCollider.transform.up = AxisUtil.Axis2Direction(transform, upAxis);
 		m_TriggerCollider.transform.position = cube.transform.position;
-		m_TriggerCollider.transform.forward = CubeAxis.Axis2Direction(transform, forward);
-		m_TriggerCollider.transform.right = CubeAxis.Axis2Direction(transform, right);
-		m_TriggerCollider.transform.up = CubeAxis.Axis2Direction(transform, up);
 
 		float size = step * distance * 4;
 		m_TriggerCollider.size = new Vector3(size, distance * 0.5f, size);

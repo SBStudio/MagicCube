@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Framework;
+using System;
 using System.Collections.Generic;
 
 public sealed class Main : MonoBehaviour
@@ -41,8 +42,27 @@ public sealed class Main : MonoBehaviour
 		m_MagicCube.Init();
 
 		List<CubeItem> cubeList = m_MagicCube[m_MagicCube.layer];
-		CubeItem cube = cubeList[Random.Range(0, cubeList.Count)];
-		m_Player.SetCube(cube, cube.axisList[Random.Range(0, cube.axisList.Count)]);
+		CubeItem cube = cubeList[UnityEngine.Random.Range(0, cubeList.Count)];
+		
+		List<AxisType> axisTypes = new List<AxisType>(cube.axisDict.Keys);
+		int index = UnityEngine.Random.Range(0, cube.axisDict.Count);
+		AxisType upAxis = axisTypes[index];
+
+		axisTypes = new List<AxisType>(Enum.GetValues(typeof(AxisType)) as AxisType[]);
+
+		axisTypes.Remove(upAxis);
+		axisTypes.Remove((AxisType)(-(int)upAxis));
+
+		index = UnityEngine.Random.Range(0, axisTypes.Count);
+		AxisType rightAxis = axisTypes[index];
+
+		axisTypes.Remove(rightAxis);
+		axisTypes.Remove((AxisType)(-(int)rightAxis));
+
+		index = UnityEngine.Random.Range(0, axisTypes.Count);
+		AxisType forwardAxis = axisTypes[index];
+
+		m_Player.SetCube(cube, rightAxis, upAxis, forwardAxis);
 	}
 	
 	private void OnGUI()

@@ -6,7 +6,7 @@ public sealed class CubeItem : MonoBehaviour
 {
 	public int layer;
 	public float size { get { return transform.localScale.x; } }
-	public List<CubeAxis.Axis> axisList { get; private set; }
+	public Dictionary<AxisType, ItemType> axisDict { get; private set; }
 	public BoxCollider collider { get; private set; }
 	public Renderer renderer { get; private set; }
 	public Material material { get; private set; }
@@ -27,13 +27,14 @@ public sealed class CubeItem : MonoBehaviour
 
 	public void Init()
 	{
-		axisList = new List<CubeAxis.Axis>();
+		axisDict = new Dictionary<AxisType, ItemType>();
 
-		CubeAxis.Axis[] axiss = Enum.GetValues(typeof(CubeAxis.Axis)) as CubeAxis.Axis[];
-		for (int i = axiss.Length; --i >= 0;)
+		AxisType[] axisTypes = Enum.GetValues(typeof(AxisType)) as AxisType[];
+		ItemType[] itemTypes = Enum.GetValues(typeof(ItemType)) as ItemType[];
+		for (int i = axisTypes.Length; --i >= 0;)
 		{
-			CubeAxis.Axis axis = axiss[i];
-			Vector3 direction = CubeAxis.Axis2Direction(transform, axis);
+			AxisType axis = axisTypes[i];
+			Vector3 direction = AxisUtil.Axis2Direction(transform, axis);
 			if (Physics.Linecast(transform.position,
 			                     transform.position + direction * (collider.size.x * 1.5f),
 			                     1 << LayerDefine.CUBE))
@@ -41,7 +42,7 @@ public sealed class CubeItem : MonoBehaviour
 				continue;
 			}
 			
-			axisList.Add(axis);
+			axisDict[axis] = itemTypes[UnityEngine.Random.Range(0, itemTypes.Length)];
 		}
 	}
 
