@@ -34,7 +34,7 @@ public sealed class IdleState : IState
 			controller.rollAngle = (direction.y * AxisUtil.Axis2Direction(controller.magicCube.transform, upAxis).x) > 0 ? 90 : -90;
 		}
 		
-		controller.stateMachine.Enter<HitTestState>();
+		controller.stateMachine.Enter<TestState>();
 
 		CubeTestEvent cubeTestEvent = new CubeTestEvent();
 		cubeTestEvent.cube = evt.cube;

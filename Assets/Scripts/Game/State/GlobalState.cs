@@ -97,6 +97,11 @@ public sealed class GlobalState : IState
 		}
 		else if (m_ViewInputId == evt.gesture.inputId)
 		{
+			if (controller.stateMachine.Get<TestState>() == controller.stateMachine.state)
+			{
+				return;
+			}
+
 			Vector3 deltaPosition = evt.gesture.deltaPosition;
 			deltaPosition /= Screen.dpi;
 			

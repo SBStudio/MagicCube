@@ -69,7 +69,7 @@ public sealed class CubeController : MonoBehaviour
 		stateMachine = this.gameObject.AddComponent<StateMachine>();
 		stateMachine.Add<GlobalState>().controller = this;
 		stateMachine.Add<IdleState>().controller = this;
-		stateMachine.Add<HitTestState>().controller = this;
+		stateMachine.Add<TestState>().controller = this;
 		stateMachine.Add<RollState>().controller = this;
 		stateMachine.Add<MoveState>().controller = this;
 		stateMachine.EnterGlobal<GlobalState>();

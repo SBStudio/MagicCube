@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Framework;
 
-public sealed class HitTestState : IState
+public sealed class TestState : IState
 {
 	public CubeController controller;
 
