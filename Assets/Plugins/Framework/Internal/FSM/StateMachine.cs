@@ -7,8 +7,9 @@ namespace Framework
 	public sealed class StateMachine : MonoBehaviour
 	{
 		private Dictionary<Type, IState> m_StateDict = new Dictionary<Type, IState>();
-
+		
 		public IState globalState { get; private set; }
+		public IState prevGlobalState { get; private set; }
 		public IState state { get; private set; }
 		public IState prevState { get; private set; }
 		
@@ -69,12 +70,6 @@ namespace Framework
 
 		private void OnDestroy()
 		{
-			if (null != globalState)
-			{
-				globalState.OnDestroy();
-				globalState = null;
-			}
-
 			foreach (IState state in m_StateDict.Values)
 			{
 				state.OnDestroy();
@@ -82,6 +77,32 @@ namespace Framework
 
 			m_StateDict.Clear();
 			m_StateDict = null;
+		}
+		
+		public bool EnterGlobal<T>() where T : IState
+		{
+			if (!Contains<T>())
+			{
+				return false;
+			}
+			
+			Type type = typeof(T);
+			IState nextState = m_StateDict[type];
+			if (null != globalState)
+			{
+				if (!globalState.OnCondition(nextState))
+				{
+					return false;
+				}
+				
+				globalState.OnExit();
+			}
+			
+			prevGlobalState = globalState;
+			globalState = nextState;
+			globalState.OnEnter();
+			
+			return true;
 		}
 
 		public bool Enter<T>() where T : IState
@@ -110,17 +131,19 @@ namespace Framework
 			return true;
 		}
 
-		public void Add<T>() where T : IState
+		public T Add<T>() where T : IState
 		{
 			if (Contains<T>())
 			{
-				return;
+				return Get<T>();
 			}
 			
 			Type type = typeof(T);
-			IState state = ScriptableObject.CreateInstance<T>();
+			T state = ScriptableObject.CreateInstance<T>();
 
 			m_StateDict.Add(type, state);
+
+			return state;
 		}
 
 		public T Get<T>() where T : IState

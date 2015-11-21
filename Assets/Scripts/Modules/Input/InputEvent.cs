@@ -1,19 +1,30 @@
 ﻿using UnityEngine;
 
-public sealed class InputEvent
+public sealed class InputStartEvent
 {
-	public enum InputType
-	{
-		InputStart,
-		InputMove,
-		InputEnd,
-	}
-	
+	public Gesture gesture;
+	public float time;
+	public float deltaTime;
+}
+
+public sealed class InputMoveEvent
+{
+	public Gesture gesture;
+	public float time;
+	public float deltaTime;
+}
+
+public sealed class InputEndEvent
+{
+	public Gesture gesture;
+	public float time;
+	public float deltaTime;
+}
+
+public sealed class Gesture
+{
 	public int inputId;
-	public InputType inputType;
 	public Vector2 lastPosition;
 	public Vector2 position;
 	public Vector2 deltaPosition;
-	public float time;
-	public float deltaTime;
 }
