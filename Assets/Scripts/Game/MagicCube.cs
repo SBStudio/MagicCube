@@ -243,9 +243,11 @@ public sealed class MagicCube : MonoBehaviour
 		m_TriggerCollider.gameObject.SetActive(false);
 		enableCollision = true;
 
-		m_TriggerCollider.transform.forward = AxisUtil.Axis2Direction(transform, forwardAxis);
-		m_TriggerCollider.transform.right = AxisUtil.Axis2Direction(transform, rightAxis);
-		m_TriggerCollider.transform.up = AxisUtil.Axis2Direction(transform, upAxis);
+		Vector3 forward = AxisUtil.Axis2Direction(transform, forwardAxis);
+		Vector3 right = AxisUtil.Axis2Direction(transform, rightAxis);
+		Vector3 up = AxisUtil.Axis2Direction(transform, upAxis);
+
+		m_TriggerCollider.transform.rotation = Quaternion.LookRotation(forward, up);
 		m_TriggerCollider.transform.position = cube.transform.position;
 
 		float size = step * distance * 4;
