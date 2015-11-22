@@ -34,7 +34,51 @@ public sealed class GlobalState : IState
 
 		if (GUILayout.Button("Go!"))
 		{
-			EventSystem<CubeMoveEvent>.Broadcast(new CubeMoveEvent());
+			if (controller.stateMachine.Get<IdleState>() != controller.stateMachine.state)
+			{
+				return;
+			}
+			
+			controller.magicCube.enableCollision = true;
+
+			CubeMoveEvent evt = null;
+			RaycastHit raycastHit;
+			if (Physics.Raycast(controller.player.cube.transform.position,
+			                    controller.player.transform.forward,
+			                    out raycastHit,
+			                    controller.distance,
+			                    1 << LayerDefine.CUBE))
+			{
+				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
+				if (null != cube)
+				{
+					evt = new CubeMoveEvent();
+					evt.cube = cube;
+					evt.rightAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.right);
+					evt.upAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.up);
+					evt.forwardAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.forward);
+				}
+			}
+			else
+			{
+				CubeItem cube = controller.player.cube;
+				if (null != cube)
+				{
+					evt = new CubeMoveEvent();
+					evt.cube = cube;
+					evt.rightAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.right);
+					evt.upAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.forward);
+					evt.forwardAxis = AxisUtil.Direction2Axis(cube.transform, -controller.player.transform.up);
+				}
+			}
+			
+			controller.magicCube.enableCollision = false;
+
+			if (null != evt)
+			{
+				controller.stateMachine.Enter<MoveState>();
+				EventSystem<CubeMoveEvent>.Broadcast(evt);
+			}
 		}
 	}
 

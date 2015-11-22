@@ -7,6 +7,11 @@ public sealed class MoveState : IState
 
 	private Vector3 m_StartPosition;
 	private float m_StartTime;
+
+	private void OnEnable()
+	{
+		EventSystem<CubeMoveEvent>.Add(OnCubeMove);
+	}
 	
 	public override void OnEnter()
 	{
@@ -27,5 +32,10 @@ public sealed class MoveState : IState
 		{
 			controller.stateMachine.Enter<IdleState>();
 		}
+	}
+	
+	private void OnCubeMove(CubeMoveEvent evt)
+	{
+		controller.player.SetCube(evt.cube, evt.rightAxis, evt.upAxis, evt.forwardAxis);
 	}
 }

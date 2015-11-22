@@ -16,5 +16,8 @@ public sealed class CubeTestEvent
 
 public sealed class CubeMoveEvent
 {
-
+	public CubeItem cube;
+	public AxisType rightAxis;
+	public AxisType upAxis;
+	public AxisType forwardAxis;
 }

@@ -8,7 +8,6 @@ public sealed class IdleState : IState
 	private void OnEnable()
 	{
 		EventSystem<CubeRollEvent>.Add(OnCubeRoll);
-		EventSystem<CubeMoveEvent>.Add(OnCubeMove);
 	}
 	
 	private void OnCubeRoll(CubeRollEvent evt)
@@ -29,12 +28,12 @@ public sealed class IdleState : IState
 		bool isHorizontal = Mathf.Abs(evt.deltaPosition.x) > Mathf.Abs(evt.deltaPosition.y);
 		if (isHorizontal)
 		{
-			float dot = Vector3.Dot(controller.camera.transform.up, AxisUtil.Axis2Direction(controller.transform, upAxis));
+			float dot = Vector3.Dot(controller.camera.transform.up, AxisUtil.Axis2Direction(controller.magicCube.transform, upAxis));
 			controller.rollAngle = evt.deltaPosition.x * dot > 0 ? -90 : 90;
 		}
 		else
 		{
-			float dot = Vector3.Dot(controller.camera.transform.right, AxisUtil.Axis2Direction(controller.transform, upAxis));
+			float dot = Vector3.Dot(controller.camera.transform.right, AxisUtil.Axis2Direction(controller.magicCube.transform, upAxis));
 			controller.rollAngle = evt.deltaPosition.y * dot > 0 ? 90 : -90;
 		}
 		
@@ -46,15 +45,5 @@ public sealed class IdleState : IState
 		cubeTestEvent.upAxis = upAxis;
 		cubeTestEvent.forwardAxis = forwardAxis;
 		EventSystem<CubeTestEvent>.Broadcast(cubeTestEvent);
-	}
-
-	private void OnCubeMove(CubeMoveEvent evt)
-	{
-		if (this != controller.stateMachine.state)
-		{
-			return;
-		}
-
-		controller.stateMachine.Enter<MoveState>();
 	}
 }
