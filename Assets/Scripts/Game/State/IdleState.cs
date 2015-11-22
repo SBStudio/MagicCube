@@ -8,6 +8,7 @@ public sealed class IdleState : IState
 	private void OnEnable()
 	{
 		EventSystem<CubeRollEvent>.Add(OnCubeRoll);
+		EventSystem<CubeMoveEvent>.Add(OnCubeMove);
 	}
 	
 	private void OnCubeRoll(CubeRollEvent evt)
@@ -18,20 +19,23 @@ public sealed class IdleState : IState
 			return;
 		}
 		
-		Vector3 direction = evt.deltaPosition.normalized;
+		Vector3 direction = controller.camera.transform.right * evt.deltaPosition.x + controller.camera.transform.up * evt.deltaPosition.y;
+		Vector3 forward = controller.camera.transform.forward;
 		AxisType rightAxis, upAxis, forwardAxis;
-		AxisUtil.GetRollAxis(controller.magicCube.transform, direction, out rightAxis, out upAxis, out forwardAxis);
+		AxisUtil.GetRollAxis(controller.magicCube.transform, direction, forward, out rightAxis, out upAxis, out forwardAxis);
 		
 		controller.rollAxis = upAxis;
 		
-		bool isHorizontal = Mathf.Abs(direction.x) > Mathf.Abs(direction.y);
+		bool isHorizontal = Mathf.Abs(evt.deltaPosition.x) > Mathf.Abs(evt.deltaPosition.y);
 		if (isHorizontal)
 		{
-			controller.rollAngle = (direction.x * AxisUtil.Axis2Direction(controller.magicCube.transform, upAxis).y) > 0 ? -90 : 90;
+			float dot = Vector3.Dot(controller.camera.transform.up, AxisUtil.Axis2Direction(controller.transform, upAxis));
+			controller.rollAngle = evt.deltaPosition.x * dot > 0 ? -90 : 90;
 		}
 		else
 		{
-			controller.rollAngle = (direction.y * AxisUtil.Axis2Direction(controller.magicCube.transform, upAxis).x) > 0 ? 90 : -90;
+			float dot = Vector3.Dot(controller.camera.transform.right, AxisUtil.Axis2Direction(controller.transform, upAxis));
+			controller.rollAngle = evt.deltaPosition.y * dot > 0 ? 90 : -90;
 		}
 		
 		controller.stateMachine.Enter<TestState>();
@@ -42,5 +46,15 @@ public sealed class IdleState : IState
 		cubeTestEvent.upAxis = upAxis;
 		cubeTestEvent.forwardAxis = forwardAxis;
 		EventSystem<CubeTestEvent>.Broadcast(cubeTestEvent);
+	}
+
+	private void OnCubeMove(CubeMoveEvent evt)
+	{
+		if (this != controller.stateMachine.state)
+		{
+			return;
+		}
+
+		controller.stateMachine.Enter<MoveState>();
 	}
 }

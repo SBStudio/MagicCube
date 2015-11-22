@@ -6,6 +6,7 @@ public sealed class GlobalState : IState
 	public CubeController controller;
 	
 	private CubeItem m_SelectCube;
+	private Vector2 m_StartPosition;
 	private int m_RollInputId = int.MinValue;
 	private int m_ViewInputId = int.MinValue;
 	
@@ -30,11 +31,17 @@ public sealed class GlobalState : IState
 				controller.magicCube.layer = i;
 			}
 		}
+
+		if (GUILayout.Button("Go!"))
+		{
+			EventSystem<CubeMoveEvent>.Broadcast(new CubeMoveEvent());
+		}
 	}
 
 	private void OnUpdateCamera(float deltaTime)
 	{
-		Vector3 position = Vector3.back * (controller.magicCube.layer + 1) * controller.distance * controller.viewDistance;
+		float distance = (controller.magicCube.layer + 1) * controller.distance * controller.viewDistance;
+		Vector3 position = -controller.camera.transform.forward * distance;
 		position = Vector3.Lerp(controller.camera.transform.position, position, controller.viewLerp * deltaTime);
 		
 		controller.camera.transform.position = position;
@@ -45,11 +52,13 @@ public sealed class GlobalState : IState
 		controller.magicCube.enableCollision = true;
 		CubeItem select = null;
 		
+		float distance = (controller.magicCube.layer + 1) * controller.distance * controller.viewDistance;
 		Ray ray = controller.camera.ScreenPointToRay(evt.gesture.position);
 		RaycastHit[] raycastHits = Physics.RaycastAll(ray,
-		                                              Mathf.Abs(controller.camera.transform.position.z),
+		                                              distance,
 		                                              1 << LayerDefine.CUBE,
 		                                              QueryTriggerInteraction.Collide);
+
 		controller.magicCube.enableCollision = false;
 		
 		for (int i = 0; i < raycastHits.Length; ++i)
@@ -78,6 +87,7 @@ public sealed class GlobalState : IState
 			if (int.MinValue == m_RollInputId)
 			{
 				m_RollInputId = evt.gesture.inputId;
+				m_StartPosition = evt.gesture.position;
 				m_SelectCube = select;
 			}
 		}
@@ -105,12 +115,12 @@ public sealed class GlobalState : IState
 			Vector3 deltaPosition = evt.gesture.deltaPosition;
 			deltaPosition /= Screen.dpi;
 			
-			controller.magicCube.transform.Rotate(controller.camera.transform.up,
-			                                      -deltaPosition.x * controller.viewSensitivity,
-			                                      Space.World);
-			controller.magicCube.transform.Rotate(controller.camera.transform.right,
-			                                      deltaPosition.y * controller.viewSensitivity,
-			                                      Space.World);
+			controller.camera.transform.RotateAround(controller.magicCube.transform.position,
+			                                         controller.camera.transform.up,
+			                                         deltaPosition.x * controller.viewSensitivity);
+			controller.camera.transform.RotateAround(controller.magicCube.transform.position,
+			                                         controller.camera.transform.right,
+			                                         -deltaPosition.y * controller.viewSensitivity);
 		}
 	}
 	
@@ -122,7 +132,7 @@ public sealed class GlobalState : IState
 
 			CubeRollEvent cubeRollEvent = new CubeRollEvent();
 			cubeRollEvent.cube = m_SelectCube;
-			cubeRollEvent.deltaPosition = evt.gesture.deltaPosition;
+			cubeRollEvent.deltaPosition = evt.gesture.position - m_StartPosition;
 			EventSystem<CubeRollEvent>.Broadcast(cubeRollEvent);
 		}
 		else if (m_ViewInputId == evt.gesture.inputId)

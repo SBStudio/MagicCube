@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Framework;
 
 public sealed class TestState : IState
 {
 	public CubeController controller;
+
+	private TimerBehaviour m_TestTimer;
 
 	private void OnEnable()
 	{
@@ -12,24 +14,34 @@ public sealed class TestState : IState
 
 	public override void OnEnter()
 	{
-		controller.trigger.onTriggerEnter += OnCubeTrigger;
+		controller.cubeTrigger.onTriggerEnter += OnCubeTrigger;
+
+		m_TestTimer = TimerUtil.Begin(OnTestTiemr, controller.testTime);
+	}
+
+	public override void OnExit ()
+	{
+		if (null != m_TestTimer)
+		{
+			m_TestTimer.Stop();
+		}
 	}
 	
 	private void OnCubeTest(CubeTestEvent evt)
 	{
-		controller.triggerCollider.gameObject.SetActive(false);
+		controller.cubeCollider.gameObject.SetActive(false);
 		controller.magicCube.enableCollision = true;
 		
 		Vector3 forward = AxisUtil.Axis2Direction(controller.magicCube.transform, evt.forwardAxis);
 		Vector3 right = AxisUtil.Axis2Direction(controller.magicCube.transform, evt.rightAxis);
 		Vector3 up = AxisUtil.Axis2Direction(controller.magicCube.transform, evt.upAxis);
 		
-		controller.triggerCollider.transform.rotation = Quaternion.LookRotation(forward, up);
-		controller.triggerCollider.transform.position = evt.cube.transform.position;
+		controller.cubeCollider.transform.rotation = Quaternion.LookRotation(forward, up);
+		controller.cubeCollider.transform.position = evt.cube.transform.position;
 		
 		float size = controller.step * controller.distance * 4;
-		controller.triggerCollider.size = new Vector3(size, controller.distance * 0.5f, size);
-		controller.triggerCollider.gameObject.SetActive(true);
+		controller.cubeCollider.size = new Vector3(size, controller.distance * 0.5f, size);
+		controller.cubeCollider.gameObject.SetActive(true);
 	}
 	
 	private void OnCubeTrigger(Collider collider)
@@ -66,9 +78,14 @@ public sealed class TestState : IState
 		int num = controller.step * controller.step;
 		if (num <= controller.selectDict.Count)
 		{
-			controller.trigger.gameObject.SetActive(false);
+			controller.cubeTrigger.gameObject.SetActive(false);
 			controller.magicCube.enableCollision = false;
 			controller.stateMachine.Enter<RollState>();
 		}
+	}
+
+	private void OnTestTiemr()
+	{
+		controller.stateMachine.Enter<IdleState>();
 	}
 }

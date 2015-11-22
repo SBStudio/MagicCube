@@ -24,13 +24,15 @@ public sealed class CubeController : MonoBehaviour
 	public float rollTime = 0.5f;
 	public AxisType rollAxis;
 	public float rollAngle;
+	public float testTime = 0.5f;
+	public float moveTime = 0.5f;
 	
 	public Camera camera { get; private set; }
 	public MagicCube magicCube { get; private set; }
 	public Player player { get; private set; }
 	public StateMachine stateMachine { get; private set; }
-	public Trigger trigger { get; private set; }
-	public BoxCollider triggerCollider { get; private set; }
+	public Trigger cubeTrigger { get; private set; }
+	public BoxCollider cubeCollider { get; private set; }
 	public Dictionary<CubeItem, SelectCube> selectDict { get; private set; }
 	 
 	private void Awake()
@@ -59,9 +61,9 @@ public sealed class CubeController : MonoBehaviour
 		gameObject.transform.SetParent(transform);
 		gameObject.SetActive(false);
 		
-		trigger = gameObject.AddComponent<Trigger>();
-		triggerCollider = gameObject.AddComponent<BoxCollider>();
-		triggerCollider.isTrigger = true;
+		cubeTrigger = gameObject.AddComponent<Trigger>();
+		cubeCollider = gameObject.AddComponent<BoxCollider>();
+		cubeCollider.isTrigger = true;
 		
 		Rigidbody rigidBody = gameObject.AddComponent<Rigidbody>();
 		rigidBody.isKinematic = true;

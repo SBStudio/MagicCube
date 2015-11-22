@@ -13,3 +13,8 @@ public sealed class CubeTestEvent
 	public AxisType upAxis;
 	public AxisType forwardAxis;
 }
+
+public sealed class CubeMoveEvent
+{
+
+}

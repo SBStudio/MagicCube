@@ -4,12 +4,13 @@ using System.Collections.Generic;
 public static class AxisUtil
 {
 	public static void GetRollAxis(Transform transform,
-	                               Vector3 direction,
+	                               Vector3 right,
+	                               Vector3 forward,
 	                               out AxisType rightAxis,
 	                               out AxisType upAxis,
 	                               out AxisType forwardAxis)
 	{
-		Vector3 right = Vector3.zero, up = Vector3.zero, forward = Vector3.zero;
+		Vector3 r = default(Vector3), u = default(Vector3), f = default(Vector3);
 		List<Vector3> axisList = new List<Vector3>()
 		{
 			transform.right,
@@ -19,25 +20,39 @@ public static class AxisUtil
 		
 		for (int i = axisList.Count; --i >= 0;)
 		{
-			float project1 = Vector3.Project(direction, right).magnitude;
-			float project2 = Vector3.Project(direction, axisList[i]).magnitude;
-			right = project1 > project2 ? right : axisList[i];
+			if (default(Vector3) == r)
+			{
+				r = axisList[i];
+
+				continue;
+			}
+
+			float project1 = Vector3.Project(right, r).magnitude;
+			float project2 = Vector3.Project(right, axisList[i]).magnitude;
+			r = project1 > project2 ? r : axisList[i];
 		}
-		axisList.Remove(right);
+		axisList.Remove(r);
 		
 		for (int i = axisList.Count; --i >= 0;)
 		{
-			float project1 = Vector3.Project(Vector3.forward, forward).magnitude;
-			float project2 = Vector3.Project(Vector3.forward, axisList[i]).magnitude;
-			forward = project1 > project2 ? forward : axisList[i];
+			if (default(Vector3) == f)
+			{
+				f = axisList[i];
+				
+				continue;
+			}
+
+			float project1 = Vector3.Project(forward, f).magnitude;
+			float project2 = Vector3.Project(forward, axisList[i]).magnitude;
+			f = project1 > project2 ? f : axisList[i];
 		}
-		axisList.Remove(forward);
+		axisList.Remove(f);
 		
-		up = axisList[0];
+		u = axisList[0];
 		
-		rightAxis = Direction2Axis(transform, right);
-		upAxis = Direction2Axis(transform, up);
-		forwardAxis = Direction2Axis(transform, forward);
+		rightAxis = Direction2Axis(transform, r);
+		upAxis = Direction2Axis(transform, u);
+		forwardAxis = Direction2Axis(transform, f);
 	}
 	
 	public static Vector3 Axis2Direction(Transform transform, AxisType axisType)
