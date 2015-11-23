@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Framework;
 using System;
 using System.Collections.Generic;
@@ -25,7 +25,8 @@ public sealed class CubeController : MonoBehaviour
 	public AxisType rollAxis;
 	public float rollAngle;
 	public float testTime = 0.5f;
-	public float moveTime = 0.5f;
+	public float moveTime = 0.25f;
+	public float itemTime = 0.25f;
 	
 	public Camera camera { get; private set; }
 	public MagicCube magicCube { get; private set; }
@@ -74,6 +75,7 @@ public sealed class CubeController : MonoBehaviour
 		stateMachine.Add<TestState>().controller = this;
 		stateMachine.Add<RollState>().controller = this;
 		stateMachine.Add<MoveState>().controller = this;
+		stateMachine.Add<ItemState>().controller = this;
 		stateMachine.EnterGlobal<GlobalState>();
 		stateMachine.Enter<IdleState>();
 	}
@@ -86,8 +88,8 @@ public sealed class CubeController : MonoBehaviour
 		List<CubeItem> cubeList = magicCube[magicCube.layer];
 		CubeItem cube = cubeList[UnityEngine.Random.Range(0, cubeList.Count)];
 		
-		List<AxisType> axisTypes = new List<AxisType>(cube.axisDict.Keys);
-		int index = UnityEngine.Random.Range(0, cube.axisDict.Count);
+		List<AxisType> axisTypes = new List<AxisType>(cube.itemDict.Keys);
+		int index = UnityEngine.Random.Range(0, cube.itemDict.Count);
 		AxisType upAxis = axisTypes[index];
 
 		axisTypes = new List<AxisType>(Enum.GetValues(typeof(AxisType)) as AxisType[]);

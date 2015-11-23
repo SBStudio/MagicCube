@@ -30,21 +30,14 @@ public sealed class MagicCube : MonoBehaviour
 			for (int i = cubeList.Count; --i >= 0;)
 			{
 				CubeItem cube = cubeList[i];
-				
-				Color color = cube.color;
-				color.a = 0;
-				iTween.ColorTo(cube.gameObject, color, colorTime);
+				cube.FadeIn(colorTime);
 			}
 			
 			cubeList = cubeLists[layer];
 			for (int i = cubeList.Count; --i >= 0;)
 			{
 				CubeItem cube = cubeList[i];
-				
-				cube.renderer.enabled = true;
-				Color color = cube.color;
-				color.a = 1;
-				iTween.ColorTo(cube.gameObject, color, colorTime);
+				cube.FadeOut(colorTime);
 			}
 			
 			if (null != m_FadeTimer)
@@ -112,7 +105,6 @@ public sealed class MagicCube : MonoBehaviour
 			cube.transform.localPosition = position;
 			cube.transform.localScale = Vector3.one * size;
 			cube.layer = layer;
-			cube.renderer.enabled = false;
 			cube.collider.size = Vector3.one * (1 + space);
 			
 			if (null == cubeLists[layer])
@@ -151,7 +143,7 @@ public sealed class MagicCube : MonoBehaviour
 		{
 			CubeItem cube = cubeList[i];
 			
-			cube.renderer.enabled = false;
+			cube.enableRenderer = false;
 		}
 	}
 }

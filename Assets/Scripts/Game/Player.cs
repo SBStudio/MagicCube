@@ -13,14 +13,12 @@ public sealed class Player : MonoBehaviour
 		this.rightAxis = rightAxis;
 		this.upAxis = upAxis;
 		this.forwardAxis = forwardAxis;
-	}
 
-	private void LateUpdate()
-	{
 		Vector3 forward = AxisUtil.Axis2Direction(cube.transform, forwardAxis);
 		Vector3 right = AxisUtil.Axis2Direction(cube.transform, rightAxis);
 		Vector3 up = AxisUtil.Axis2Direction(cube.transform, upAxis);
 
+		transform.SetParent(cube.transform);
 		transform.rotation = Quaternion.LookRotation(forward, up);
 		transform.position = cube.transform.position + transform.up * cube.size * 0.5f;
 	}
