@@ -49,11 +49,6 @@ public sealed class MagicCube : MonoBehaviour
 	}
 	private int m_Layer;
 
-	public List<CubeItem> this[int layer]
-	{
-		get { return cubeLists[layer]; }
-	}
-
 	public bool enableCollision
 	{
 		get { return m_EnableCollision; }
@@ -79,6 +74,11 @@ public sealed class MagicCube : MonoBehaviour
 		}
 	}
 	private bool m_EnableCollision = false;
+	
+	public List<CubeItem> this[int layer]
+	{
+		get { return cubeLists[layer]; }
+	}
 
 	public void Init(int step, float size, float space, float distance)
 	{

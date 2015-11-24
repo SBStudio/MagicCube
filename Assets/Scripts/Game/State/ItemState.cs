@@ -5,6 +5,7 @@ public sealed class ItemState : IState
 {
 	public CubeController controller;
 
+	private CubeItem m_Cube;
 	private Vector3 m_StartPosition;
 	private Quaternion m_StartRotation;
 	private Vector3 m_EndPosition;
@@ -13,13 +14,14 @@ public sealed class ItemState : IState
 	
 	public override void OnEnter()
 	{
+		m_Cube = controller.player.cube;
 		m_StartPosition = controller.player.transform.position;
 		m_StartRotation = controller.player.transform.rotation;
 		m_EndPosition = m_StartPosition;
 		m_EndRotation = m_StartRotation;
 		m_StartTime = Time.time;
 
-		UseItem(controller.player.cube.itemDict[controller.player.upAxis]);
+		UseItem(m_Cube.itemDict[controller.player.upAxis]);
 	}
 
 	public override void OnUpdate()
@@ -36,10 +38,10 @@ public sealed class ItemState : IState
 		
 		if (1 <= progress)
 		{
-			AxisType rightAxis = AxisUtil.Direction2Axis(controller.player.cube.transform, controller.player.transform.right);
-			AxisType upAxis = AxisUtil.Direction2Axis(controller.player.cube.transform, controller.player.transform.up);
-			AxisType forwardAxis = AxisUtil.Direction2Axis(controller.player.cube.transform, controller.player.transform.forward);
-			controller.player.SetCube(controller.player.cube, rightAxis, upAxis, forwardAxis);
+			AxisType rightAxis = AxisUtil.Direction2Axis(m_Cube.transform, controller.player.transform.right);
+			AxisType upAxis = AxisUtil.Direction2Axis(m_Cube.transform, controller.player.transform.up);
+			AxisType forwardAxis = AxisUtil.Direction2Axis(m_Cube.transform, controller.player.transform.forward);
+			controller.player.SetCube(m_Cube, rightAxis, upAxis, forwardAxis);
 
 			controller.stateMachine.Enter<IdleState>();
 		}
@@ -70,6 +72,55 @@ public sealed class ItemState : IState
 		}
 		else if (ItemType.TURN_DOWN == itemType)
 		{
+			controller.magicCube.enableCollision = true;
+			
+			RaycastHit raycastHit;
+			if (Physics.Raycast(controller.player.cube.transform.position,
+			                    -controller.player.transform.up,
+			                    out raycastHit,
+			                    controller.distance,
+			                    1 << LayerDefine.CUBE))
+			{
+				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
+				if (null != cube)
+				{
+					m_Cube = cube;
+					m_EndPosition = cube.transform.position + controller.player.transform.up * cube.size * 0.5f;
+					--controller.magicCube.layer;
+				}
+				else
+				{
+					controller.stateMachine.Enter<IdleState>();
+				}
+			}
+
+			controller.magicCube.enableCollision = false;
+		}
+		else if (ItemType.TURN_UP == itemType)
+		{
+			controller.magicCube.enableCollision = true;
+			
+			RaycastHit raycastHit;
+			if (Physics.Raycast(controller.player.cube.transform.position,
+			                    controller.player.transform.up,
+			                    out raycastHit,
+			                    controller.distance,
+			                    1 << LayerDefine.CUBE))
+			{
+				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
+				if (null != cube)
+				{
+					m_Cube = cube;
+					m_EndPosition = cube.transform.position + controller.player.transform.up * cube.size * 0.5f;
+					++controller.magicCube.layer;
+				}
+				else
+				{
+					controller.stateMachine.Enter<IdleState>();
+				}
+			}
+			
+			controller.magicCube.enableCollision = false;
 		}
 	}
 }

@@ -76,8 +76,15 @@ public sealed class GlobalState : IState
 
 			if (null != evt)
 			{
-				controller.stateMachine.Enter<MoveState>();
-				EventSystem<CubeMoveEvent>.Broadcast(evt);
+				if (ItemType.STOP == evt.cube.itemDict[evt.upAxis])
+				{
+					controller.stateMachine.Enter<IdleState>();
+				}
+				else
+				{
+					controller.stateMachine.Enter<MoveState>();
+					EventSystem<CubeMoveEvent>.Broadcast(evt);
+				}
 			}
 		}
 	}

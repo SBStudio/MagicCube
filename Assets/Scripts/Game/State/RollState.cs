@@ -18,11 +18,6 @@ public sealed class RollState : IState
 		OnUpdateRoll(Time.deltaTime);
 	}
 	
-	public override void OnExit ()
-	{
-		controller.selectDict.Clear();
-	}
-	
 	private void OnUpdateRoll(float deltaTime)
 	{
 		float progress = Mathf.Clamp01((Time.time - m_StartTime) / controller.rollTime);
@@ -44,6 +39,7 @@ public sealed class RollState : IState
 		
 		if (1 <= progress)
 		{
+			controller.selectDict.Clear();
 			controller.stateMachine.Enter<IdleState>();
 		}
 	}

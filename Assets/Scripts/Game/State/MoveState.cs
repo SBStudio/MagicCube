@@ -51,13 +51,6 @@ public sealed class MoveState : IState
 		Vector3 up = AxisUtil.Axis2Direction(evt.cube.transform, evt.upAxis);
 		Vector3 forward = AxisUtil.Axis2Direction(evt.cube.transform, evt.forwardAxis);
 
-		if (ItemType.STOP == evt.cube.itemDict[evt.upAxis])
-		{
-			controller.stateMachine.Enter<IdleState>();
-
-			return;
-		}
-
 		m_EndRotation = Quaternion.LookRotation(forward, up);
 		m_EndPosition = evt.cube.transform.position + m_EndRotation * Vector3.up * evt.cube.size * 0.5f;
 	}
