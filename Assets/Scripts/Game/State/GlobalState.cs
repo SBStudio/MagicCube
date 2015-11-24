@@ -50,7 +50,8 @@ public sealed class GlobalState : IState
 			                    1 << LayerDefine.CUBE))
 			{
 				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
-				if (null != cube)
+				if (null != cube
+				    && cube.layer == controller.magicCube.layer)
 				{
 					evt = new CubeMoveEvent();
 					evt.cube = cube;
@@ -59,17 +60,15 @@ public sealed class GlobalState : IState
 					evt.forwardAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.forward);
 				}
 			}
-			else
+
+			if (null == evt)
 			{
 				CubeItem cube = controller.player.cube;
-				if (null != cube)
-				{
-					evt = new CubeMoveEvent();
-					evt.cube = cube;
-					evt.rightAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.right);
-					evt.upAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.forward);
-					evt.forwardAxis = AxisUtil.Direction2Axis(cube.transform, -controller.player.transform.up);
-				}
+				evt = new CubeMoveEvent();
+				evt.cube = cube;
+				evt.rightAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.right);
+				evt.upAxis = AxisUtil.Direction2Axis(cube.transform, controller.player.transform.forward);
+				evt.forwardAxis = AxisUtil.Direction2Axis(cube.transform, -controller.player.transform.up);
 			}
 			
 			controller.magicCube.enableCollision = false;
