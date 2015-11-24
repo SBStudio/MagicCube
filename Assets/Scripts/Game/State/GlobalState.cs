@@ -24,15 +24,9 @@ public sealed class GlobalState : IState
 	
 	public override void OnGUI()
 	{
-		for (int i = 0; i <= controller.magicCube.maxLayer; ++i)
-		{
-			if (GUILayout.Button("Layer: " + i, LogUtil.guiStyle))
-			{
-				controller.magicCube.layer = i;
-			}
-		}
+		GUILayout.Space(50);
 
-		if (GUILayout.Button("Go!"))
+		if (GUILayout.Button("Go!", LogUtil.guiStyle))
 		{
 			if (controller.stateMachine.Get<IdleState>() != controller.stateMachine.state)
 			{
@@ -75,6 +69,11 @@ public sealed class GlobalState : IState
 
 			if (null != evt)
 			{
+				if (!evt.cube.itemDict.ContainsKey(evt.upAxis))
+				{
+					return;
+				}
+
 				if (ItemType.STOP == evt.cube.itemDict[evt.upAxis])
 				{
 					controller.stateMachine.Enter<IdleState>();

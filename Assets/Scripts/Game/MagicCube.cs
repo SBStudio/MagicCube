@@ -101,10 +101,10 @@ public sealed class MagicCube : MonoBehaviour
 			CubeItem cube = gameObject.AddComponent<CubeItem>();
 			cube.name = i.ToString();
 			cube.gameObject.layer = LayerDefine.CUBE;
-			cube.transform.parent = transform;
+			cube.transform.SetParent(transform);
 			cube.transform.localPosition = position;
-			cube.transform.localScale = Vector3.one * size;
 			cube.layer = layer;
+			cube.size = size;
 			cube.collider.size = Vector3.one * (1 + space);
 			
 			if (null == cubeLists[layer])

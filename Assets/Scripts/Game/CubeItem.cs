@@ -16,7 +16,11 @@ public sealed class CubeItem : MonoBehaviour
 	};
 
 	public int layer;
-	public float size { get { return transform.localScale.x; } }
+	public float size
+	{
+		get { return transform.localScale.x; }
+		set { transform.localScale = Vector3.one * value; }
+	}
 	public Dictionary<AxisType, ItemType> itemDict { get; private set; }
 	public Dictionary<AxisType, Renderer> faceDict { get; private set; }
 	public BoxCollider collider { get; private set; }
