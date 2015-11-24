@@ -68,6 +68,7 @@ public sealed class CubeItem : MonoBehaviour
 			itemDict[axis] = itemType;
 
 			GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.CUBE_FACE));
+			gameObject.name = axis + "_" + itemType;
 			gameObject.transform.SetParent(transform);
 			gameObject.transform.localPosition = Vector3.zero;
 			gameObject.transform.forward = AxisUtil.Axis2Direction(transform, axis);

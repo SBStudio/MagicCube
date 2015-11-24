@@ -50,15 +50,16 @@ public sealed class CubeController : MonoBehaviour
 			camera = Camera.main;
 		}
 
-		GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.MAGIC_CUBE));
+		GameObject gameObject = new GameObject(typeof(MagicCube).Name);
 		gameObject.transform.SetParent(transform);
-		magicCube = gameObject.GetComponent<MagicCube>() ?? gameObject.AddComponent<MagicCube>();
+		magicCube = gameObject.AddComponent<MagicCube>();
 
 		gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.PLAYER));
+		gameObject.name = typeof(Player).Name;
 		gameObject.transform.SetParent(transform);
-		player = gameObject.GetComponent<Player>() ?? gameObject.AddComponent<Player>();
+		player = gameObject.AddComponent<Player>();
 		
-		gameObject = new GameObject("Trigger");
+		gameObject = new GameObject(typeof(Trigger).Name);
 		gameObject.transform.SetParent(transform);
 		gameObject.SetActive(false);
 		
