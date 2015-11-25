@@ -23,8 +23,35 @@ public sealed class CubeItem : MonoBehaviour
 	}
 	public Dictionary<AxisType, ItemType> itemDict { get; private set; }
 	public Dictionary<AxisType, Renderer> faceDict { get; private set; }
-	public BoxCollider collider { get; private set; }
-	public Renderer renderer { get; private set; }
+
+	public BoxCollider collider
+	{
+		get
+		{
+			if (null == m_Collider)
+			{
+				m_Collider = GetComponent<BoxCollider>();
+			}
+
+			return m_Collider;
+		}
+	}
+	public BoxCollider m_Collider;
+
+	public Renderer renderer
+	{
+		get
+		{
+			if (null == m_Renderer)
+			{
+				m_Renderer = GetComponent<Renderer>();
+			}
+
+			return m_Renderer;
+		}
+	}
+	public Renderer m_Renderer;
+
 	public bool enableRenderer
 	{
 		get { return m_EnableRenderer; }
@@ -38,12 +65,6 @@ public sealed class CubeItem : MonoBehaviour
 		}
 	}
 	private bool m_EnableRenderer = false;
-
-	private void Awake()
-	{
-		collider = GetComponent<BoxCollider>();
-		renderer = GetComponent<Renderer>();
-	}
 
 	public void Init()
 	{

@@ -99,9 +99,11 @@ public sealed class MagicCube : MonoBehaviour
 			
 			GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.CUBE_ITEM));
 			CubeItem cube = gameObject.AddComponent<CubeItem>();
+			Transform parent = transform.FindChild(layer.ToString()) ?? new GameObject(layer.ToString()).transform;
+			parent.SetParent(transform);
 			cube.name = i.ToString();
 			cube.gameObject.layer = LayerDefine.CUBE;
-			cube.transform.SetParent(transform);
+			cube.transform.SetParent(parent);
 			cube.transform.localPosition = position;
 			cube.layer = layer;
 			cube.size = size;
@@ -134,7 +136,7 @@ public sealed class MagicCube : MonoBehaviour
 		
 		this.layer = maxLayer;
 	}
-	
+
 	private void OnFadeTimer(params object[] args)
 	{
 		int layer = (int)args[0];
