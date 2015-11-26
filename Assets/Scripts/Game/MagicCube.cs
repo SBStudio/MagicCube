@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Framework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -30,14 +31,14 @@ public sealed class MagicCube : MonoBehaviour
 			for (int i = cubeList.Count; --i >= 0;)
 			{
 				CubeItem cube = cubeList[i];
-				cube.FadeIn(colorTime);
+				cube.Fade(colorTime, false);
 			}
 			
 			cubeList = cubeLists[layer];
 			for (int i = cubeList.Count; --i >= 0;)
 			{
 				CubeItem cube = cubeList[i];
-				cube.FadeOut(colorTime);
+				cube.Fade(colorTime, true);
 			}
 			
 			if (null != m_FadeTimer)
@@ -73,20 +74,50 @@ public sealed class MagicCube : MonoBehaviour
 			}
 		}
 	}
-	private bool m_EnableCollision = false;
+	private bool m_EnableCollision = true;
+	
+	public bool enableRenderer
+	{
+		get { return m_EnableRenderer; }
+		set
+		{
+			if (m_EnableRenderer == value)
+			{
+				return;
+			}
+			
+			m_EnableRenderer = value;
+			
+			for (int i = cubeLists.Length; --i >= 0;)
+			{
+				List<CubeItem> cubeList = cubeLists[i];
+				for (int j = cubeList.Count; --j >= 0;)
+				{
+					CubeItem cube = cubeList[j];
+
+					cube.enableRenderer = value;
+				}
+			}
+		}
+	}
+	private bool m_EnableRenderer = true;
 	
 	public List<CubeItem> this[int layer]
 	{
 		get { return cubeLists[layer]; }
 	}
 
-	public void Init(int step, float size, float space, float distance)
+	public void Generate(int step, float size, float space, float distance)
 	{
-		float offset = (1 - step) * 0.5f;
-		
-		maxLayer = (step - 1) / 2;
+		if (0 >= step)
+		{
+			return;
+		}
 
+		maxLayer = (step - 1) / 2;
 		cubeLists = new List<CubeItem>[maxLayer + 1];
+		
+		float offset = (1 - step) * 0.5f;
 		int num = step * step * step;
 		for (int i = num; --i >= 0;)
 		{
@@ -123,18 +154,47 @@ public sealed class MagicCube : MonoBehaviour
 			{
 				CubeItem cube = cubeList[j];
 				
-				cube.Init();
+				cube.Generate(RandomCube(cube));
 			}
 
 			for (int j = cubeList.Count; --j >= 0;)
 			{
 				CubeItem cube = cubeList[j];
-				
 				cube.collider.enabled = false;
 			}
 		}
+	}
+
+	public void Init()
+	{
+		enableCollision = false;
+		enableRenderer = false;
+
+		layer = maxLayer;
+	}
+
+	private Dictionary<AxisType, ItemType> RandomCube(CubeItem cube)
+	{
+		Dictionary<AxisType, ItemType> itemDict = new Dictionary<AxisType, ItemType>();
 		
-		this.layer = maxLayer;
+		AxisType[] axisTypes = Enum.GetValues(typeof(AxisType)) as AxisType[];
+		ItemType[] itemTypes = Enum.GetValues(typeof(ItemType)) as ItemType[];
+		for (int i = axisTypes.Length; --i >= 0;)
+		{
+			AxisType axis = axisTypes[i];
+			Vector3 direction = AxisUtil.Axis2Direction(cube.transform, axis);
+			if (Physics.Linecast(cube.transform.position,
+			                     cube.transform.position + direction * (cube.collider.size.x * 1.5f),
+			                     1 << LayerDefine.CUBE))
+			{
+				continue;
+			}
+			
+			ItemType itemType = itemTypes[UnityEngine.Random.Range(0, itemTypes.Length)];
+			itemDict[axis] = itemType;
+		}
+
+		return itemDict;
 	}
 
 	private void OnFadeTimer(params object[] args)

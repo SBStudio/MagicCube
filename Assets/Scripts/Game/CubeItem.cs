@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 using System.Collections.Generic;
 
 public sealed class CubeItem : MonoBehaviour
@@ -58,30 +57,35 @@ public sealed class CubeItem : MonoBehaviour
 		set
 		{
 			this.renderer.enabled = value;
+			if (!value)
+			{
+				Color color = this.renderer.material.color;
+				color.a = 0;
+				this.renderer.material.color = color;
+			}
+
 			foreach (Renderer renderer in faceDict.Values)
 			{
 				renderer.enabled = value;
+				if (!value)
+				{
+					Color color = renderer.material.color;
+					color.a = 0;
+					renderer.material.color = color;
+				}
 			}
 		}
 	}
-	private bool m_EnableRenderer = false;
+	private bool m_EnableRenderer = true;
 
-	public void Init()
+	public void Generate(Dictionary<AxisType, ItemType> itemDict)
 	{
-		itemDict = new Dictionary<AxisType, ItemType>();
+		this.itemDict = itemDict;
 		faceDict = new Dictionary<AxisType, Renderer>();
 
-		Color color = this.renderer.material.color;
-		color.a = 0;
-		this.renderer.material.color = color;
-		this.renderer.enabled = false;
-
-		AxisType[] axisTypes = Enum.GetValues(typeof(AxisType)) as AxisType[];
-		ItemType[] itemTypes = Enum.GetValues(typeof(ItemType)) as ItemType[];
-		for (int i = axisTypes.Length; --i >= 0;)
+		foreach (KeyValuePair<AxisType, ItemType> itemInfo in itemDict)
 		{
-			AxisType axis = axisTypes[i];
-			Vector3 direction = AxisUtil.Axis2Direction(transform, axis);
+			Vector3 direction = AxisUtil.Axis2Direction(transform, itemInfo.Key);
 			if (Physics.Linecast(transform.position,
 			                     transform.position + direction * (collider.size.x * 1.5f),
 			                     1 << LayerDefine.CUBE))
@@ -89,55 +93,33 @@ public sealed class CubeItem : MonoBehaviour
 				continue;
 			}
 
-			ItemType itemType = itemTypes[UnityEngine.Random.Range(0, itemTypes.Length)];
-			itemDict[axis] = itemType;
-
 			GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.CUBE_FACE));
-			gameObject.name = axis + "_" + itemType;
+			gameObject.name = itemInfo.Key + "_" + itemInfo.Value;
 			gameObject.transform.SetParent(transform);
 			gameObject.transform.localPosition = Vector3.zero;
-			gameObject.transform.forward = AxisUtil.Axis2Direction(transform, axis);
+			gameObject.transform.forward = AxisUtil.Axis2Direction(transform, itemInfo.Key);
 			gameObject.transform.localScale = Vector3.one;
 
 			Renderer renderer = gameObject.GetComponent<Renderer>();
-
-			color = s_ColorDict[itemType];
-			color.a = 0;
+			Color color = s_ColorDict[itemInfo.Value];
 			renderer.material.color = color;
-			renderer.enabled = false;
-			faceDict[axis] = renderer;
-		}
-	}
-
-	public void FadeIn(float time)
-	{
-		this.renderer.enabled = true;
-		Color color = this.renderer.material.color;
-		color.a = 0;
-		iTween.ColorTo(gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
-
-		foreach (Renderer renderer in faceDict.Values)
-		{
-			renderer.enabled = true;
-			color = renderer.material.color;
-			color.a = 0;
-			iTween.ColorTo(renderer.gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
+			faceDict[itemInfo.Key] = renderer;
 		}
 	}
 	
-	public void FadeOut(float time)
+	public void Fade(float time, bool display)
 	{
 		this.renderer.enabled = true;
 
 		Color color = this.renderer.material.color;
-		color.a = 1;
+		color.a = display ? 1 : 0;
 		iTween.ColorTo(gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
 
 		foreach (Renderer renderer in faceDict.Values)
 		{
 			renderer.enabled = true;
 			color = renderer.material.color;
-			color.a = 1;
+			color.a = display ? 1 : 0;
 			iTween.ColorTo(renderer.gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
 		}
 	}
