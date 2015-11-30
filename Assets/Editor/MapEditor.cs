@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using Framework;
+using System;
 using System.Collections.Generic;
 
 public sealed class MapEditor : EditorWindow
@@ -28,7 +29,12 @@ public sealed class MapEditor : EditorWindow
 		}
 		if (GUILayout.Button("Save"))
 		{
-			DataSystem<MapData>.Init("Database.db", "Map", "id", "cube");
+			Dictionary<string, Type> fieldDict = new Dictionary<string, Type>()
+			{
+				{ "id", typeof(int) },
+				{ "cube", typeof(string) }
+			};
+			DataSystem<MapData>.Init("Database.db", "Map", fieldDict);
 
 			for (int i = m_MagicCube.maxLayer + 1; --i >= 0;)
 			{
@@ -39,12 +45,16 @@ public sealed class MapEditor : EditorWindow
 
 					Dictionary<string, object> dataDict = new Dictionary<string, object>();
 					dataDict["id"] = int.Parse(cube.name);
-					dataDict["cube"] = string.Empty;
+
+					string str = string.Empty;
 					foreach (AxisType axisType in cube.itemDict.Keys)
 					{
-						dataDict["cube"] += (int)axisType + ":" + (int)cube.itemDict[axisType] + "|";
+						str += (int)axisType + ":" + (int)cube.itemDict[axisType] + "|";
 					}
+					str = str.Remove(str.Length - 1);
 
+					dataDict["cube"] = str;
+					
 					MapData data = new MapData();
 					data.Parse(dataDict);
 					DataSystem<MapData>.Set(data);

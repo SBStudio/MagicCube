@@ -17,16 +17,15 @@ namespace Framework
 		private static SqliteUtil s_SqliteUtil;
 		public static string table { get; private set; }
 
-		public static void Init(string database, string table, params string[] fields)
+		public static void Init(string database, string table, Dictionary<string, Type> fieldDict)
 		{
 			DataSystem<T>.table = table;
 			s_SqliteUtil = new SqliteUtil(database);
 
-			Type[] types = new Type[fields.Length];
-			for (int i = fields.Length; --i >= 0;)
-			{
-				types[i] = fields[i].GetType();
-			}
+			string[] fields;
+			Type[] types;
+			GetTypes(fieldDict, out fields, out types);
+
 			s_SqliteUtil.Create(table, fields, types);
 
 			SqliteDataReader reader = s_SqliteUtil.GetAll(table);
@@ -76,6 +75,23 @@ namespace Framework
 			}
 
 			s_DataDict[value.data] = value;
+		}
+
+		private static void GetTypes(Dictionary<string, Type> typeDict, out string[] fields, out Type[] types)
+		{
+			string[] fs = new string[typeDict.Count];
+			Type[] ts = new Type[typeDict.Count];
+			
+			int i = 0;
+			foreach (KeyValuePair<string, Type> dataInfo in typeDict)
+			{
+				fs[i] = dataInfo.Key;
+				ts[i] = dataInfo.Value;
+				++i;
+			}
+			
+			fields = fs;
+			types = ts;
 		}
 
 		private static void GetDatas(Dictionary<string, object> dataDict, out string[] fields, out object[] datas)
