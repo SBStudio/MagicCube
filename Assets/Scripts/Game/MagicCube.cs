@@ -68,7 +68,6 @@ public sealed class MagicCube : MonoBehaviour
 				for (int j = cubeList.Count; --j >= 0;)
 				{
 					CubeItem cube = cubeList[j];
-
 					cube.collider.enabled = value;
 				}
 			}
@@ -116,7 +115,7 @@ public sealed class MagicCube : MonoBehaviour
 
 		maxLayer = (step - 1) / 2;
 		cubeLists = new List<CubeItem>[maxLayer + 1];
-		
+
 		float offset = (1 - step) * 0.5f;
 		int num = step * step * step;
 		for (int i = num; --i >= 0;)
@@ -124,7 +123,6 @@ public sealed class MagicCube : MonoBehaviour
 			Vector3 grids = new Vector3(i % step + offset,
 			                            (i / step) % step + offset,
 			                            (i / (step * step)) % step + offset);
-			
 			Vector3 position = grids * distance;
 			int layer = (int)Mathf.Max(Mathf.Abs(grids.x), Mathf.Abs(grids.y), Mathf.Abs(grids.z));
 			
@@ -139,7 +137,7 @@ public sealed class MagicCube : MonoBehaviour
 			cube.layer = layer;
 			cube.size = size;
 			cube.collider.size = Vector3.one * (1 + space);
-			
+
 			if (null == cubeLists[layer])
 			{
 				cubeLists[layer] = new List<CubeItem>();
@@ -153,7 +151,6 @@ public sealed class MagicCube : MonoBehaviour
 			for (int j = cubeList.Count; --j >= 0;)
 			{
 				CubeItem cube = cubeList[j];
-				
 				cube.Generate(RandomCube(cube));
 			}
 
@@ -204,7 +201,6 @@ public sealed class MagicCube : MonoBehaviour
 		for (int i = cubeList.Count; --i >= 0;)
 		{
 			CubeItem cube = cubeList[i];
-			
 			cube.enableRenderer = false;
 		}
 	}

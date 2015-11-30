@@ -21,7 +21,24 @@ public sealed class CubeItem : MonoBehaviour
 		set { transform.localScale = Vector3.one * value; }
 	}
 	public Dictionary<AxisType, ItemType> itemDict { get; private set; }
-	public Dictionary<AxisType, Renderer> faceDict { get; private set; }
+	private Dictionary<AxisType, Renderer> m_RendererDict;
+	private Dictionary<AxisType, Material> m_MaterialDict;
+
+	public ItemType this[AxisType axisType]
+	{
+		get { return itemDict[axisType]; }
+		set
+		{
+			if (!itemDict.ContainsKey(axisType))
+			{
+				return;
+			}
+			
+			Material material = m_MaterialDict[axisType];
+			Color color = s_ColorDict[value];
+			material.color = color;
+		}
+	}
 
 	public BoxCollider collider
 	{
@@ -35,7 +52,7 @@ public sealed class CubeItem : MonoBehaviour
 			return m_Collider;
 		}
 	}
-	public BoxCollider m_Collider;
+	private BoxCollider m_Collider;
 
 	public Renderer renderer
 	{
@@ -49,29 +66,44 @@ public sealed class CubeItem : MonoBehaviour
 			return m_Renderer;
 		}
 	}
-	public Renderer m_Renderer;
+	private Renderer m_Renderer;
+	
+	public Material material
+	{
+		get
+		{
+			if (null == m_Material)
+			{
+				m_Material = new Material(renderer.sharedMaterial);
+				renderer.material = m_Material;
+			}
+
+			return m_Material;
+		}
+	}
+	private Material m_Material;
 
 	public bool enableRenderer
 	{
 		get { return m_EnableRenderer; }
 		set
 		{
-			this.renderer.enabled = value;
+			renderer.enabled = value;
 			if (!value)
 			{
 				Color color = this.renderer.material.color;
 				color.a = 0;
-				this.renderer.material.color = color;
+				material.color = color;
 			}
 
-			foreach (Renderer renderer in faceDict.Values)
+			foreach (AxisType axisType in itemDict.Keys)
 			{
-				renderer.enabled = value;
+				m_RendererDict[axisType].enabled = value;
 				if (!value)
 				{
-					Color color = renderer.material.color;
+					Color color = m_MaterialDict[axisType].color;
 					color.a = 0;
-					renderer.material.color = color;
+					m_MaterialDict[axisType].color = color;
 				}
 			}
 		}
@@ -81,18 +113,11 @@ public sealed class CubeItem : MonoBehaviour
 	public void Generate(Dictionary<AxisType, ItemType> itemDict)
 	{
 		this.itemDict = itemDict;
-		faceDict = new Dictionary<AxisType, Renderer>();
+		m_RendererDict = new Dictionary<AxisType, Renderer>();
+		m_MaterialDict = new Dictionary<AxisType, Material>();
 
 		foreach (KeyValuePair<AxisType, ItemType> itemInfo in itemDict)
 		{
-			Vector3 direction = AxisUtil.Axis2Direction(transform, itemInfo.Key);
-			if (Physics.Linecast(transform.position,
-			                     transform.position + direction * (collider.size.x * 1.5f),
-			                     1 << LayerDefine.CUBE))
-			{
-				continue;
-			}
-
 			GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.CUBE_FACE));
 			gameObject.name = itemInfo.Key + "_" + itemInfo.Value;
 			gameObject.transform.SetParent(transform);
@@ -101,24 +126,27 @@ public sealed class CubeItem : MonoBehaviour
 			gameObject.transform.localScale = Vector3.one;
 
 			Renderer renderer = gameObject.GetComponent<Renderer>();
+			Material material = new Material(renderer.sharedMaterial);
+			renderer.material = material;
 			Color color = s_ColorDict[itemInfo.Value];
-			renderer.material.color = color;
-			faceDict[itemInfo.Key] = renderer;
+			material.color = color;
+			m_RendererDict[itemInfo.Key] = renderer;
+			m_MaterialDict[itemInfo.Key] = material;
 		}
 	}
 	
 	public void Fade(float time, bool display)
 	{
-		this.renderer.enabled = true;
+		renderer.enabled = true;
 
-		Color color = this.renderer.material.color;
+		Color color = material.color;
 		color.a = display ? 1 : 0;
 		iTween.ColorTo(gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
-
-		foreach (Renderer renderer in faceDict.Values)
+		
+		foreach (AxisType axisType in itemDict.Keys)
 		{
-			renderer.enabled = true;
-			color = renderer.material.color;
+			m_RendererDict[axisType].enabled = true;
+			color = m_MaterialDict[axisType].color;
 			color.a = display ? 1 : 0;
 			iTween.ColorTo(renderer.gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
 		}

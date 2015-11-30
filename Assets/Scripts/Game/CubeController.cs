@@ -91,7 +91,7 @@ public sealed class CubeController : MonoBehaviour
 		CubeItem cube = cubeList[UnityEngine.Random.Range(0, cubeList.Count)];
 		
 		List<AxisType> axisTypes = new List<AxisType>(cube.itemDict.Keys);
-		int index = UnityEngine.Random.Range(0, cube.itemDict.Count);
+		int index = UnityEngine.Random.Range(0, axisTypes.Count);
 		AxisType upAxis = axisTypes[index];
 
 		axisTypes = new List<AxisType>(Enum.GetValues(typeof(AxisType)) as AxisType[]);

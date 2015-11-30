@@ -1,23 +1,35 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Mono.Data.Sqlite;
 
 namespace Framework
 {
-	public interface IDataInfo : IParser<Dictionary<string, object>>
+	public interface IData : IParser<Dictionary<string, object>>
 	{
-		object key { get; }
+		Dictionary<string, object> dataDict { get; }
+		string type { get; }
+		object data { get; }
 	}
 
-	public sealed class DataSystem<T> where T : IDataInfo, new()
+	public sealed class DataSystem<T> where T : IData, new()
 	{
 		private static Dictionary<object, T> s_DataDict = new Dictionary<object, T>();
+		private static SqliteUtil s_SqliteUtil;
+		public static string table { get; private set; }
 
-		public static void Init(string database, string table)
+		public static void Init(string database, string table, params string[] fields)
 		{
-			SqliteUtil sqliteUtil = new SqliteUtil(database);
-			string tableName = table;
+			DataSystem<T>.table = table;
+			s_SqliteUtil = new SqliteUtil(database);
 
-			SqliteDataReader reader = sqliteUtil.GetAll(tableName);
+			Type[] types = new Type[fields.Length];
+			for (int i = fields.Length; --i >= 0;)
+			{
+				types[i] = fields[i].GetType();
+			}
+			s_SqliteUtil.Create(table, fields, types);
+
+			SqliteDataReader reader = s_SqliteUtil.GetAll(table);
 			while (reader.Read())
 			{
 				Dictionary<string, object> data = new Dictionary<string, object>();
@@ -30,10 +42,8 @@ namespace Framework
 				T dataInfo = new T();
 				dataInfo.Parse(data);
 				
-				s_DataDict[dataInfo.key] = dataInfo;
+				s_DataDict[dataInfo.data] = dataInfo;
 			}
-
-			sqliteUtil.Dispose();
 		}
 
 		public static T Get(object key)
@@ -52,6 +62,37 @@ namespace Framework
 			s_DataDict.Values.CopyTo(datas, 0);
 
 			return datas;
+		}
+
+		public static void Set(T value)
+		{
+			if (!s_DataDict.ContainsKey(value.data))
+			{
+				string[] fields;
+				object[] datas;
+				GetDatas(value.dataDict, out fields, out datas);
+
+				s_SqliteUtil.Add(table, fields, datas);
+			}
+
+			s_DataDict[value.data] = value;
+		}
+
+		private static void GetDatas(Dictionary<string, object> dataDict, out string[] fields, out object[] datas)
+		{
+			string[] ts = new string[dataDict.Count];
+			object[] ds = new object[dataDict.Count];
+
+			int i = 0;
+			foreach (KeyValuePair<string, object> dataInfo in dataDict)
+			{
+				ts[i] = dataInfo.Key;
+				ds[i] = dataInfo.Value;
+				++i;
+			}
+
+			fields = ts;
+			datas = ds;
 		}
 	}
 }
