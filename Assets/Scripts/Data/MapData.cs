@@ -1,12 +1,12 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Framework;
 using System.Collections.Generic;
 
 public sealed class MapData : IData
 {
 	public Dictionary<string, object> dataDict { get; set; }
-	public string type { get { return "id"; } }
-	public object data { get { return id; } }
+	public string keyField { get { return "id"; } }
+	public object keyData { get { return id; } }
 
 	public int id { get; private set; }
 	public string cube { get; private set; }

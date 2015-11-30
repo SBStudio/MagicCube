@@ -36,11 +36,27 @@ namespace Framework
 		{
 			if (typeof(int) == type)
 			{
+				return "INT";
+			}
+			else if (typeof(long) == type)
+			{
 				return "INTEGER";
+			}
+			else if (typeof(bool) == type)
+			{
+				return "BOOLEAN";
 			}
 			else if (typeof(float) == type)
 			{
 				return "REAL";
+			}
+			else if (typeof(double) == type)
+			{
+				return "DOUBLE";
+			}
+			else if (typeof(char) == type)
+			{
+				return "CHAR";
 			}
 
 			return "TEXT";

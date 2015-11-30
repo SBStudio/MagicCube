@@ -7,8 +7,8 @@ namespace Framework
 	public interface IData : IParser<Dictionary<string, object>>
 	{
 		Dictionary<string, object> dataDict { get; }
-		string type { get; }
-		object data { get; }
+		string keyField { get; }
+		object keyData { get; }
 	}
 
 	public sealed class DataSystem<T> where T : IData, new()
@@ -41,7 +41,7 @@ namespace Framework
 				T dataInfo = new T();
 				dataInfo.Parse(data);
 				
-				s_DataDict[dataInfo.data] = dataInfo;
+				s_DataDict[dataInfo.keyData] = dataInfo;
 			}
 		}
 
@@ -65,16 +65,19 @@ namespace Framework
 
 		public static void Set(T value)
 		{
-			if (!s_DataDict.ContainsKey(value.data))
+			string[] fields;
+			object[] datas;
+			GetDatas(value.dataDict, out fields, out datas);
+			if (!s_DataDict.ContainsKey(value.keyData))
 			{
-				string[] fields;
-				object[] datas;
-				GetDatas(value.dataDict, out fields, out datas);
-
 				s_SqliteUtil.Add(table, fields, datas);
 			}
+			else
+			{
+				s_SqliteUtil.Set(table, value.keyField, value.keyData, fields, datas);
+			}
 
-			s_DataDict[value.data] = value;
+			s_DataDict[value.keyData] = value;
 		}
 
 		private static void GetTypes(Dictionary<string, Type> typeDict, out string[] fields, out Type[] types)
