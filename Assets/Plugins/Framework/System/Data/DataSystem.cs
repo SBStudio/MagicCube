@@ -7,41 +7,33 @@ namespace Framework
 	public interface IData : IParser<Dictionary<string, object>>
 	{
 		Dictionary<string, object> dataDict { get; }
-		string keyField { get; }
-		object keyData { get; }
 	}
 
 	public sealed class DataSystem<T> where T : IData, new()
 	{
-		private static Dictionary<object, T> s_DataDict = new Dictionary<object, T>();
-		private static SqliteUtil s_SqliteUtil;
+		public static string[] fields { get; private set; }
+		public static string keyField { get; private set; }
 		public static string table { get; private set; }
 
-		public static void Init(string database, string table, Dictionary<string, Type> fieldDict)
+		private static Dictionary<object, T> s_DataDict = new Dictionary<object, T>();
+		private static SqliteUtil s_SqliteUtil;
+
+		public static void Init(string database, string table, string[] fields, Type[] types)
 		{
 			DataSystem<T>.table = table;
+			DataSystem<T>.fields = fields;
+			DataSystem<T>.keyField = fields[0];
+
 			s_SqliteUtil = new SqliteUtil(database);
-
-			string[] fields;
-			Type[] types;
-			GetTypes(fieldDict, out fields, out types);
-
 			s_SqliteUtil.Create(table, fields, types);
 
 			SqliteDataReader reader = s_SqliteUtil.GetAll(table);
 			while (reader.Read())
 			{
-				Dictionary<string, object> data = new Dictionary<string, object>();
-				for (int i = reader.FieldCount; --i >= 0;)
-				{
-					string type = reader.GetName(i);
-					data[type] = reader.GetValue(i);
-				}
-
 				T dataInfo = new T();
-				dataInfo.Parse(data);
+				dataInfo.Parse(ToDictionary(reader));
 				
-				s_DataDict[dataInfo.keyData] = dataInfo;
+				s_DataDict[dataInfo.dataDict[keyField]] = dataInfo;
 			}
 		}
 
@@ -65,53 +57,32 @@ namespace Framework
 
 		public static void Set(T value)
 		{
-			string[] fields;
-			object[] datas;
-			GetDatas(value.dataDict, out fields, out datas);
-			if (!s_DataDict.ContainsKey(value.keyData))
+			object key = value.dataDict[keyField];
+			object[] datas = new object[value.dataDict.Count];
+			value.dataDict.Values.CopyTo(datas, 0);
+
+			if (!s_DataDict.ContainsKey(key))
 			{
 				s_SqliteUtil.Add(table, fields, datas);
 			}
 			else
 			{
-				s_SqliteUtil.Set(table, value.keyField, value.keyData, fields, datas);
+				s_SqliteUtil.Set(table, keyField, key, fields, datas);
 			}
 
-			s_DataDict[value.keyData] = value;
+			s_DataDict[key] = value;
 		}
 
-		private static void GetTypes(Dictionary<string, Type> typeDict, out string[] fields, out Type[] types)
+		private static Dictionary<string, object> ToDictionary(SqliteDataReader reader)
 		{
-			string[] fs = new string[typeDict.Count];
-			Type[] ts = new Type[typeDict.Count];
-			
-			int i = 0;
-			foreach (KeyValuePair<string, Type> dataInfo in typeDict)
-			{
-				fs[i] = dataInfo.Key;
-				ts[i] = dataInfo.Value;
-				++i;
-			}
-			
-			fields = fs;
-			types = ts;
-		}
+			Dictionary<string, object> dict = new Dictionary<string, object>();
 
-		private static void GetDatas(Dictionary<string, object> dataDict, out string[] fields, out object[] datas)
-		{
-			string[] ts = new string[dataDict.Count];
-			object[] ds = new object[dataDict.Count];
-
-			int i = 0;
-			foreach (KeyValuePair<string, object> dataInfo in dataDict)
+			for (int i = reader.FieldCount; --i >= 0;)
 			{
-				ts[i] = dataInfo.Key;
-				ds[i] = dataInfo.Value;
-				++i;
+				dict[reader.GetName(i)] = reader.GetValue(i);
 			}
 
-			fields = ts;
-			datas = ds;
+			return dict;
 		}
 	}
 }

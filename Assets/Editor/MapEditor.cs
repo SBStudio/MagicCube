@@ -29,12 +29,9 @@ public sealed class MapEditor : EditorWindow
 		}
 		if (GUILayout.Button("Save"))
 		{
-			Dictionary<string, Type> fieldDict = new Dictionary<string, Type>()
-			{
-				{ "id", typeof(int) },
-				{ "cube", typeof(string) }
-			};
-			DataSystem<MapData>.Init("Database.db", "Map", fieldDict);
+			string[] fields = new string[] { "id", "cube" };
+			Type[] types = new Type[] { typeof(int), typeof(string) };
+			DataSystem<MapData>.Init("Database.db", "Map", fields, types);
 
 			for (int i = m_MagicCube.maxLayer + 1; --i >= 0;)
 			{
