@@ -14,7 +14,7 @@ public sealed class CubeItem : MonoBehaviour
 		{ ItemType.STOP, new Color(1, 0, 0) },
 	};
 
-	public int layer;
+	public int layer { get; set; }
 	public float size
 	{
 		get { return transform.localScale.x; }
@@ -33,7 +33,8 @@ public sealed class CubeItem : MonoBehaviour
 			{
 				return;
 			}
-			
+
+			itemDict[axisType] = value;
 			Material material = m_MaterialDict[axisType];
 			Color color = s_ColorDict[value];
 			material.color = color;

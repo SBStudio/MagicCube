@@ -10,6 +10,8 @@ public sealed class MagicCube : MonoBehaviour
 	public List<CubeItem>[] cubeLists { get; private set; }
 	public int lastLayer { get; private set; }
 	public int maxLayer { get; private set; }
+	public int step { get; private set; }
+	public float size { get; private set; }
 
 	private TimerBehaviour m_FadeTimer;
 
@@ -106,13 +108,13 @@ public sealed class MagicCube : MonoBehaviour
 		get { return cubeLists[layer]; }
 	}
 
-	public void Generate(int step, float size, float space, float distance)
+	public void Generate(int step, float size, float space)
 	{
-		if (0 >= step)
-		{
-			return;
-		}
+		step = Mathf.Max(0, step);
 
+		this.step = step;
+		this.size = size;
+		float distance = size + space;
 		maxLayer = (step - 1) / 2;
 		cubeLists = new List<CubeItem>[maxLayer + 1];
 

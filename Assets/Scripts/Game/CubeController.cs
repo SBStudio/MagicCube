@@ -18,7 +18,7 @@ public sealed class CubeController : MonoBehaviour
 	
 	public int step = 5;
 	public float size = 1;
-	public float space = 0.05f;
+	public float space = 0;
 	public float distance;
 	public float rollError = 0;
 	public float rollTime = 0.5f;
@@ -84,7 +84,7 @@ public sealed class CubeController : MonoBehaviour
 	private void Start()
 	{
 		distance = size + space;
-		magicCube.Generate(step, size, space, distance);
+		magicCube.Generate(step, size, space);
 		magicCube.Init();
 
 		List<CubeItem> cubeList = magicCube[magicCube.layer];

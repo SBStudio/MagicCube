@@ -6,8 +6,8 @@ public sealed class MapData : IData
 {
 	public Dictionary<string, object> dataDict { get; private set; }
 
-	public int id { get; set; }
-	public string cube { get; set; }
+	public int id { get; private set; }
+	public string cube { get; private set; }
 
 	public MapData()
 	{
