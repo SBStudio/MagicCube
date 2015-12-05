@@ -84,7 +84,7 @@ public sealed class CubeController : MonoBehaviour
 	private void Start()
 	{
 		distance = size + space;
-		magicCube.Generate(step, size, space);
+		magicCube.Generate(0, step, size, space);
 		magicCube.Init();
 
 		List<CubeItem> cubeList = magicCube[magicCube.layer];

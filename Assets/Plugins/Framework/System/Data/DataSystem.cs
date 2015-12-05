@@ -31,7 +31,7 @@ namespace Framework
 			while (reader.Read())
 			{
 				T dataInfo = new T();
-				dataInfo.Parse(ToDictionary(reader));
+				dataInfo.Parse(Parse(reader));
 				
 				s_DataDict[dataInfo.dataDict[keyField]] = dataInfo;
 			}
@@ -73,7 +73,7 @@ namespace Framework
 			s_DataDict[key] = value;
 		}
 
-		private static Dictionary<string, object> ToDictionary(SqliteDataReader reader)
+		private static Dictionary<string, object> Parse(SqliteDataReader reader)
 		{
 			Dictionary<string, object> dict = new Dictionary<string, object>();
 

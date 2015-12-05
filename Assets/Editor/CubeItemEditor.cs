@@ -4,7 +4,7 @@ using Framework;
 using System.Collections.Generic;
 
 [CustomEditor(typeof(CubeItem))]
-public class CubeItemInspector : Editor
+public class CubeItemEditor : Editor
 {
 	private CubeItem m_Cube;
 

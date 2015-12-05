@@ -4,7 +4,7 @@ namespace Framework
 {
 	public sealed class FPSInfo : ScriptableBehaviour
 	{
-		private const string INFO = "FPS:%0 (AVE:%1,MIN:%2,MAX:%3)";
+		private const string INFO = "FPS:{0} (AVE:{1},MIN:{2},MAX:{3})";
 
 		public int fps { get; private set; }
 		public int aveFPS { get { return (int)(Time.frameCount / Time.time); } }
@@ -46,7 +46,7 @@ namespace Framework
 
 			if (showDetail)
 			{
-				str = ObjectExt.Replace(INFO, fps, aveFPS, minFPS, maxFPS);
+				str = string.Format(INFO, fps, aveFPS, minFPS, maxFPS);
 			}
 
 			GUI.depth = int.MinValue;

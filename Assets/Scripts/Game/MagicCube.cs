@@ -8,10 +8,13 @@ public sealed class MagicCube : MonoBehaviour
 {
 	public float colorTime = 0.5f;
 	public List<CubeItem>[] cubeLists { get; private set; }
-	public int lastLayer { get; private set; }
-	public int maxLayer { get; private set; }
+
+	public int id { get; private set; }
 	public int step { get; private set; }
+	public int num { get; private set; }
 	public float size { get; private set; }
+	public float space { get; private set; }
+	public float distance { get; private set; }
 
 	private TimerBehaviour m_FadeTimer;
 
@@ -51,6 +54,8 @@ public sealed class MagicCube : MonoBehaviour
 		}
 	}
 	private int m_Layer;
+	public int lastLayer { get; private set; }
+	public int maxLayer { get; private set; }
 
 	public bool enableCollision
 	{
@@ -108,18 +113,21 @@ public sealed class MagicCube : MonoBehaviour
 		get { return cubeLists[layer]; }
 	}
 
-	public void Generate(int step, float size, float space)
+	public void Generate(int id, int step, float size, float space)
 	{
 		step = Mathf.Max(0, step);
 
+		this.id = id;
 		this.step = step;
 		this.size = size;
-		float distance = size + space;
-		maxLayer = (step - 1) / 2;
-		cubeLists = new List<CubeItem>[maxLayer + 1];
+		this.space = space;
 
 		float offset = (1 - step) * 0.5f;
-		int num = step * step * step;
+		distance = size + space;
+		num = step * step * step;
+		maxLayer = (step - 1) / 2;
+
+		cubeLists = new List<CubeItem>[maxLayer + 1];
 		for (int i = num; --i >= 0;)
 		{
 			Vector3 grids = new Vector3(i % step + offset,
@@ -136,6 +144,7 @@ public sealed class MagicCube : MonoBehaviour
 			cube.gameObject.layer = LayerDefine.CUBE;
 			cube.transform.SetParent(parent);
 			cube.transform.localPosition = position;
+			cube.id = i;
 			cube.layer = layer;
 			cube.size = size;
 			cube.collider.size = Vector3.one * (1 + space);

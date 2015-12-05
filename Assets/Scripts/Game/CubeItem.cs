@@ -14,6 +14,7 @@ public sealed class CubeItem : MonoBehaviour
 		{ ItemType.STOP, new Color(1, 0, 0) },
 	};
 
+	public int id { get; set; }
 	public int layer { get; set; }
 	public float size
 	{
@@ -35,13 +36,14 @@ public sealed class CubeItem : MonoBehaviour
 			}
 
 			itemDict[axisType] = value;
+			m_RendererDict[axisType].name = axisType + "_" + value;
 			Material material = m_MaterialDict[axisType];
 			Color color = s_ColorDict[value];
 			material.color = color;
 		}
 	}
 
-	public BoxCollider collider
+	public new BoxCollider collider
 	{
 		get
 		{
@@ -55,7 +57,7 @@ public sealed class CubeItem : MonoBehaviour
 	}
 	private BoxCollider m_Collider;
 
-	public Renderer renderer
+	public new Renderer renderer
 	{
 		get
 		{
@@ -113,6 +115,25 @@ public sealed class CubeItem : MonoBehaviour
 
 	public void Generate(Dictionary<AxisType, ItemType> itemDict)
 	{
+		if (null != m_RendererDict)
+		{
+			foreach (Renderer renderer in m_RendererDict.Values)
+			{
+#if UNITY_EDITOR
+				if (Application.isEditor)
+				{
+					DestroyImmediate(renderer.gameObject);
+				}
+				else
+				{
+					Destroy(renderer.gameObject);
+				}
+#else
+				Destroy(renderer.gameObject);
+#endif
+			}
+		}
+
 		this.itemDict = itemDict;
 		m_RendererDict = new Dictionary<AxisType, Renderer>();
 		m_MaterialDict = new Dictionary<AxisType, Material>();

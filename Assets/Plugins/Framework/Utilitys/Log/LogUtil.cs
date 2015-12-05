@@ -17,9 +17,9 @@ namespace Framework
 		}
 
 #if UNITY_EDITOR
-		private const string TEXT = "[%0] [%1] [%2 # %3] %4";
+		private const string TEXT = "[{0}] [{1}] [{2} # {3}] {4}";
 #else
-		private const string TEXT = "[%0] [%1] %2";
+		private const string TEXT = "[{0}] [{1}] {2}";
 #endif
 		private const string DATE = "yyMMdd hh:mm:ss ffff";
 
@@ -221,9 +221,9 @@ namespace Framework
 			int end = sf.GetFileName().LastIndexOf(".");
 			string className = sf.GetFileName().Substring(start + 1, end - start - 1);
 			string functionName = sf.GetMethod().Name;
-			string str = ObjectExt.Replace(TEXT, type, date, className, functionName, msg);
+			string str = string.Format(TEXT, type, date, className, functionName, msg);
 #else
-			string str = ObjectExt.Replace(TEXT, type, date, msg);
+			string str = string.Format(TEXT, type, date, msg);
 #endif
 
 			return str;
