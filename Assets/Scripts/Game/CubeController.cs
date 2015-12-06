@@ -16,10 +16,6 @@ public sealed class CubeController : MonoBehaviour
 	public float viewLerp = 2;
 	public float viewSensitivity = 50;
 	
-	public int step = 5;
-	public float size = 1;
-	public float space = 0;
-	public float distance;
 	public float rollError = 0;
 	public float rollTime = 0.5f;
 	public AxisType rollAxis;
@@ -83,8 +79,19 @@ public sealed class CubeController : MonoBehaviour
 
 	private void Start()
 	{
-		distance = size + space;
-		magicCube.Generate(0, step, size, space);
+		string[] fields = new string[] { MapData.FIELD_ID,
+			MapData.FIELD_STEP,
+			MapData.FIELD_SIZE,
+			MapData.FIELD_SPACE,
+			MapData.FIELD_CUBE };
+		Type[] types = new Type[] { typeof(int),
+			typeof(int),
+			typeof(float),
+			typeof(float),
+			typeof(string) };
+		DataSystem<MapData>.Init("Database.db", "Map", fields, types);
+		MapData mapData = DataSystem<MapData>.Get(0);
+		magicCube.Load(mapData);
 		magicCube.Init();
 
 		List<CubeItem> cubeList = magicCube[magicCube.layer];

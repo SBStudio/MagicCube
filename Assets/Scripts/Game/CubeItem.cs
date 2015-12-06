@@ -115,23 +115,21 @@ public sealed class CubeItem : MonoBehaviour
 
 	public void Generate(Dictionary<AxisType, ItemType> itemDict)
 	{
-		if (null != m_RendererDict)
+		for (int i = transform.childCount; --i >= 0;)
 		{
-			foreach (Renderer renderer in m_RendererDict.Values)
-			{
+			Transform child = transform.GetChild(i);
 #if UNITY_EDITOR
-				if (Application.isEditor)
-				{
-					DestroyImmediate(renderer.gameObject);
-				}
-				else
-				{
-					Destroy(renderer.gameObject);
-				}
-#else
-				Destroy(renderer.gameObject);
-#endif
+			if (Application.isEditor)
+			{
+				DestroyImmediate(child.gameObject);
 			}
+			else
+			{
+				Destroy(child.gameObject);
+			}
+#else
+			Destroy(child.gameObject);
+#endif
 		}
 
 		this.itemDict = itemDict;
@@ -170,7 +168,7 @@ public sealed class CubeItem : MonoBehaviour
 			m_RendererDict[axisType].enabled = true;
 			color = m_MaterialDict[axisType].color;
 			color.a = display ? 1 : 0;
-			iTween.ColorTo(renderer.gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
+			iTween.ColorTo(m_RendererDict[axisType].gameObject, iTween.Hash("color", color, "time", time, "includechildren", false));
 		}
 	}
 }

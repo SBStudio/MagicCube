@@ -39,8 +39,8 @@ public sealed class TestState : IState
 		controller.cubeCollider.transform.rotation = Quaternion.LookRotation(forward, up);
 		controller.cubeCollider.transform.position = evt.cube.transform.position;
 		
-		float size = controller.step * controller.distance * 4;
-		controller.cubeCollider.size = new Vector3(size, controller.distance * 0.5f, size);
+		float size = controller.magicCube.step * controller.magicCube.distance * 4;
+		controller.cubeCollider.size = new Vector3(size, controller.magicCube.distance * 0.5f, size);
 		controller.cubeCollider.gameObject.SetActive(true);
 	}
 	
@@ -75,7 +75,7 @@ public sealed class TestState : IState
 		
 		controller.selectDict[cube] = select;
 		
-		int num = controller.step * controller.step;
+		int num = controller.magicCube.step * controller.magicCube.step;
 		if (num <= controller.selectDict.Count)
 		{
 			controller.cubeTrigger.gameObject.SetActive(false);

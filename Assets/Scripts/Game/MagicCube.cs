@@ -8,7 +8,6 @@ public sealed class MagicCube : MonoBehaviour
 {
 	public float colorTime = 0.5f;
 	public List<CubeItem>[] cubeLists { get; private set; }
-
 	public int id { get; private set; }
 	public int step { get; private set; }
 	public int num { get; private set; }
@@ -113,21 +112,53 @@ public sealed class MagicCube : MonoBehaviour
 		get { return cubeLists[layer]; }
 	}
 
+	public void Load(MapData mapData)
+	{
+		Generate(mapData.id, mapData.step, mapData.size, mapData.space);
+
+		for (int i = cubeLists.Length; --i >= 0;)
+		{
+			List<CubeItem> cubeList = cubeLists[i];
+			for (int j = cubeList.Count; --j >= 0;)
+			{
+				CubeItem cube = cubeList[j];
+				cube.Generate(mapData.cubeItems[cube.id]);
+			}
+		}
+	}
+
 	public void Generate(int id, int step, float size, float space)
 	{
-		step = Mathf.Max(0, step);
+		for (int i = transform.childCount; --i >= 0;)
+		{
+			Transform child = transform.GetChild(i);
+#if UNITY_EDITOR
+			if (Application.isEditor)
+			{
+				DestroyImmediate(child.gameObject);
+			}
+			else
+			{
+				Destroy(child.gameObject);
+			}
+#else
+			Destroy(child.gameObject);
+#endif
+		}
+
+		step = Mathf.Max(1, step);
 
 		this.id = id;
 		this.step = step;
 		this.size = size;
 		this.space = space;
 
-		float offset = (1 - step) * 0.5f;
 		distance = size + space;
 		num = step * step * step;
 		maxLayer = (step - 1) / 2;
-
 		cubeLists = new List<CubeItem>[maxLayer + 1];
+		float offset = (1 - step) * 0.5f;
+
 		for (int i = num; --i >= 0;)
 		{
 			Vector3 grids = new Vector3(i % step + offset,

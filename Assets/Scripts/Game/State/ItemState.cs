@@ -78,7 +78,7 @@ public sealed class ItemState : IState
 			if (Physics.Raycast(controller.player.cube.transform.position,
 			                    -controller.player.transform.up,
 			                    out raycastHit,
-			                    controller.distance,
+								controller.magicCube.distance,
 			                    1 << LayerDefine.CUBE))
 			{
 				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
@@ -104,7 +104,7 @@ public sealed class ItemState : IState
 			if (Physics.Raycast(controller.player.cube.transform.position,
 			                    controller.player.transform.up,
 			                    out raycastHit,
-			                    controller.distance,
+								controller.magicCube.distance,
 			                    1 << LayerDefine.CUBE))
 			{
 				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();

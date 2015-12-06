@@ -49,6 +49,11 @@ namespace Framework
 
 		public static T[] GetAll()
 		{
+			if (0 >= s_DataDict.Count)
+			{
+				return null;
+			}
+
 			T[] datas = new T[s_DataDict.Count];
 			s_DataDict.Values.CopyTo(datas, 0);
 
@@ -71,6 +76,18 @@ namespace Framework
 			}
 
 			s_DataDict[key] = value;
+		}
+
+		public static void Delete(object key)
+		{
+			if (!s_DataDict.ContainsKey(key))
+			{
+				return;
+			}
+
+			s_SqliteUtil.Delete(table, new string[] { keyField }, new object[] { key });
+
+			s_DataDict.Remove(key);
 		}
 
 		private static Dictionary<string, object> Parse(SqliteDataReader reader)

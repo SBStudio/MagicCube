@@ -40,7 +40,7 @@ public sealed class GlobalState : IState
 			if (Physics.Raycast(controller.player.cube.transform.position,
 			                    controller.player.transform.forward,
 			                    out raycastHit,
-			                    controller.distance,
+								controller.magicCube.distance,
 			                    1 << LayerDefine.CUBE))
 			{
 				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
@@ -89,7 +89,7 @@ public sealed class GlobalState : IState
 
 	private void OnUpdateCamera(float deltaTime)
 	{
-		float distance = (controller.magicCube.layer + 1) * controller.distance * controller.viewDistance;
+		float distance = (controller.magicCube.layer + 1) * controller.magicCube.distance * controller.viewDistance;
 		Vector3 position = -controller.camera.transform.forward * distance;
 		position = Vector3.Lerp(controller.camera.transform.position, position, controller.viewLerp * deltaTime);
 		
@@ -101,7 +101,7 @@ public sealed class GlobalState : IState
 		controller.magicCube.enableCollision = true;
 		CubeItem select = null;
 		
-		float distance = (controller.magicCube.layer + 1) * controller.distance * controller.viewDistance;
+		float distance = (controller.magicCube.layer + 1) * controller.magicCube.distance * controller.viewDistance;
 		Ray ray = controller.camera.ScreenPointToRay(evt.gesture.position);
 		RaycastHit[] raycastHits = Physics.RaycastAll(ray,
 		                                              distance,
