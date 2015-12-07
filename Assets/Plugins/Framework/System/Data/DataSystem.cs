@@ -9,88 +9,93 @@ namespace Framework
 		Dictionary<string, object> dataDict { get; }
 	}
 
-	public sealed class DataSystem<T> where T : IData, new()
+	public sealed class DataSystem<T> : Singleton<DataSystem<T>> where T : IData, new()
 	{
-		public static string[] fields { get; private set; }
-		public static string keyField { get; private set; }
-		public static string table { get; private set; }
+		public string[] fields { get; private set; }
+		public string keyField { get; private set; }
+		public string table { get; private set; }
 
-		private static Dictionary<object, T> s_DataDict = new Dictionary<object, T>();
-		private static SqliteUtil s_SqliteUtil;
+		private Dictionary<object, T> m_DataDict = new Dictionary<object, T>();
+		private SqliteUtil m_SqliteUtil;
 
-		public static void Init(string database, string table, string[] fields, Type[] types)
+		public void Init(string database, string table, Dictionary<string, Type> fieldsDict)
 		{
-			DataSystem<T>.table = table;
-			DataSystem<T>.fields = fields;
-			DataSystem<T>.keyField = fields[0];
+			this.table = table;
 
-			s_SqliteUtil = new SqliteUtil(database);
-			s_SqliteUtil.Create(table, fields, types);
+			fields = new string[fieldsDict.Count];
+			fieldsDict.Keys.CopyTo(fields, 0);
+			Type[] types = new Type[fieldsDict.Count];
+			fieldsDict.Values.CopyTo(types, 0);
 
-			SqliteDataReader reader = s_SqliteUtil.GetAll(table);
+			keyField = fields[0];
+
+			m_SqliteUtil = new SqliteUtil(database);
+			m_SqliteUtil.Create(table, fields, types);
+
+			SqliteDataReader reader = m_SqliteUtil.GetAll(table);
 			while (reader.Read())
 			{
 				T dataInfo = new T();
 				dataInfo.Parse(Parse(reader));
 				
-				s_DataDict[dataInfo.dataDict[keyField]] = dataInfo;
+				m_DataDict[dataInfo.dataDict[keyField]] = dataInfo;
 			}
 		}
 
-		public static T Get(object key)
+		public T Get(object key)
 		{
-			if (!s_DataDict.ContainsKey(key))
+			if (!m_DataDict.ContainsKey(key))
 			{
 				return default(T);
 			}
 
-			return s_DataDict[key];
+			return m_DataDict[key];
 		}
 
-		public static T[] GetAll()
+		public T[] GetAll()
 		{
-			if (0 >= s_DataDict.Count)
+			if (0 >= m_DataDict.Count)
 			{
 				return null;
 			}
 
-			T[] datas = new T[s_DataDict.Count];
-			s_DataDict.Values.CopyTo(datas, 0);
+			T[] datas = new T[m_DataDict.Count];
+			m_DataDict.Values.CopyTo(datas, 0);
 
 			return datas;
 		}
 
-		public static void Set(T value)
+		public void Set(T value)
 		{
 			object key = value.dataDict[keyField];
 			object[] datas = new object[value.dataDict.Count];
 			value.dataDict.Values.CopyTo(datas, 0);
 
-			if (!s_DataDict.ContainsKey(key))
+			if (!m_DataDict.ContainsKey(key))
 			{
-				s_SqliteUtil.Add(table, fields, datas);
+				m_SqliteUtil.Add(table, fields, datas);
 			}
 			else
 			{
-				s_SqliteUtil.Set(table, keyField, key, fields, datas);
+				m_SqliteUtil.Set(table, keyField, key, fields, datas);
 			}
 
-			s_DataDict[key] = value;
+			m_DataDict[key] = value;
 		}
 
-		public static void Delete(object key)
+		public void Delete(object key)
 		{
-			if (!s_DataDict.ContainsKey(key))
+			if (!m_DataDict.ContainsKey(key))
 			{
 				return;
 			}
 
-			s_SqliteUtil.Delete(table, new string[] { keyField }, new object[] { key });
+			m_SqliteUtil.Delete(table, new string[] { keyField }, new object[] { key });
 
-			s_DataDict.Remove(key);
+			m_DataDict.Remove(key);
 		}
 
-		private static Dictionary<string, object> Parse(SqliteDataReader reader)
+		private Dictionary<string, object> Parse(SqliteDataReader reader)
 		{
 			Dictionary<string, object> dict = new Dictionary<string, object>();
 

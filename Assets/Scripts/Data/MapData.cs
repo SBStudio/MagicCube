@@ -1,9 +1,22 @@
 using UnityEngine;
 using Framework;
+using System;
 using System.Collections.Generic;
 
 public sealed class MapData : IData
 {
+	public const string DATABASE = "Database.db";
+	public const string TABLE = "Map";
+
+	public static readonly Dictionary<string, Type> FIELDS = new Dictionary<string, Type>()
+	{
+		{ MapData.FIELD_ID, typeof(int) },
+		{ MapData.FIELD_STEP, typeof(int) },
+		{ MapData.FIELD_SIZE, typeof(float) },
+		{ MapData.FIELD_SPACE, typeof(float) },
+		{ MapData.FIELD_CUBE, typeof(string) },	
+	};
+
 	public const string FIELD_ID = "id";
 	public const string FIELD_STEP = "step";
 	public const string FIELD_SIZE = "size";

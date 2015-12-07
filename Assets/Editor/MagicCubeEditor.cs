@@ -14,6 +14,21 @@ public class MagicCubeEditor : Editor
 	private static int s_LoadId = 0;
 	private static MagicCube s_MagicCube;
 
+	private DataSystem<MapData> mapDatabase
+	{
+		get
+		{
+			if (null == m_MapDatabase)
+			{
+				m_MapDatabase = DataSystem<MapData>.instance;
+				m_MapDatabase.Init(MapData.DATABASE, MapData.TABLE, MapData.FIELDS);
+			}
+
+			return m_MapDatabase;
+		}
+	}
+	private DataSystem<MapData> m_MapDatabase;
+
 	private void OnEnable()
 	{
 		if (null != s_MagicCube
@@ -72,18 +87,7 @@ public class MagicCubeEditor : Editor
 
 	private void OnDrawLoad()
 	{
-		string[] fields = new string[] { MapData.FIELD_ID,
-			MapData.FIELD_STEP,
-			MapData.FIELD_SIZE,
-			MapData.FIELD_SPACE,
-			MapData.FIELD_CUBE };
-		Type[] types = new Type[] { typeof(int),
-			typeof(int),
-			typeof(float),
-			typeof(float),
-			typeof(string) };
-		DataSystem<MapData>.Init("Database.db", "Map", fields, types);
-		MapData[] mapDatas = DataSystem<MapData>.GetAll();
+		MapData[] mapDatas = mapDatabase.GetAll();
 		if (null == mapDatas)
 		{
 			return;
@@ -129,7 +133,7 @@ public class MagicCubeEditor : Editor
 		Selection.activeGameObject = s_MagicCube.gameObject;
 	}
 
-	private static void Save()
+	private void Save()
 	{
 		Dictionary<AxisType, ItemType>[] cubeItems = new Dictionary<AxisType, ItemType>[s_MagicCube.num];
 		for (int i = s_MagicCube.maxLayer + 1; --i >= 0;)
@@ -152,34 +156,12 @@ public class MagicCubeEditor : Editor
 		MapData data = new MapData();
 		data.Parse(dataDict);
 
-		string[] fields = new string[] { MapData.FIELD_ID,
-			MapData.FIELD_STEP,
-			MapData.FIELD_SIZE,
-			MapData.FIELD_SPACE,
-			MapData.FIELD_CUBE };
-		Type[] types = new Type[] { typeof(int),
-			typeof(int),
-			typeof(float),
-			typeof(float),
-			typeof(string) };
-		DataSystem<MapData>.Init("Database.db", "Map", fields, types);
-		DataSystem<MapData>.Set(data);
+		mapDatabase.Set(data);
 	}
 
-	private static void Load()
+	private void Load()
 	{
-		string[] fields = new string[] { MapData.FIELD_ID,
-			MapData.FIELD_STEP,
-			MapData.FIELD_SIZE,
-			MapData.FIELD_SPACE,
-			MapData.FIELD_CUBE };
-		Type[] types = new Type[] { typeof(int),
-			typeof(int),
-			typeof(float),
-			typeof(float),
-			typeof(string) };
-		DataSystem<MapData>.Init("Database.db", "Map", fields, types);
-		MapData mapData = DataSystem<MapData>.Get(s_LoadId);
+		MapData mapData = mapDatabase.Get(s_LoadId);
 		if (null == mapData)
 		{
 			return;
@@ -188,19 +170,8 @@ public class MagicCubeEditor : Editor
 		s_MagicCube.Load(mapData);
 	}
 
-	private static void Delete()
+	private void Delete()
 	{
-		string[] fields = new string[] { MapData.FIELD_ID,
-			MapData.FIELD_STEP,
-			MapData.FIELD_SIZE,
-			MapData.FIELD_SPACE,
-			MapData.FIELD_CUBE };
-		Type[] types = new Type[] { typeof(int),
-			typeof(int),
-			typeof(float),
-			typeof(float),
-			typeof(string) };
-		DataSystem<MapData>.Init("Database.db", "Map", fields, types);
-		DataSystem<MapData>.Delete(s_LoadId);
+		mapDatabase.Delete(s_LoadId);
 	}
 }

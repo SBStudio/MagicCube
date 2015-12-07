@@ -1,6 +1,6 @@
 ﻿public enum ItemType
 {
-	NONE,
+	NONE = 0,
 	TURN_LEFT,
 	TURN_RIGHT,
 	TURN_BACK,

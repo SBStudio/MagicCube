@@ -31,6 +31,21 @@ public sealed class CubeController : MonoBehaviour
 	public Trigger cubeTrigger { get; private set; }
 	public BoxCollider cubeCollider { get; private set; }
 	public Dictionary<CubeItem, SelectCube> selectDict { get; private set; }
+
+	private DataSystem<MapData> mapDatabase
+	{
+		get
+		{
+			if (null == m_MapDatabase)
+			{
+				m_MapDatabase = DataSystem<MapData>.instance;
+				m_MapDatabase.Init(MapData.DATABASE, MapData.TABLE, MapData.FIELDS);
+			}
+
+			return m_MapDatabase;
+		}
+	}
+	private DataSystem<MapData> m_MapDatabase;
 	 
 	private void Awake()
 	{
@@ -79,18 +94,7 @@ public sealed class CubeController : MonoBehaviour
 
 	private void Start()
 	{
-		string[] fields = new string[] { MapData.FIELD_ID,
-			MapData.FIELD_STEP,
-			MapData.FIELD_SIZE,
-			MapData.FIELD_SPACE,
-			MapData.FIELD_CUBE };
-		Type[] types = new Type[] { typeof(int),
-			typeof(int),
-			typeof(float),
-			typeof(float),
-			typeof(string) };
-		DataSystem<MapData>.Init("Database.db", "Map", fields, types);
-		MapData mapData = DataSystem<MapData>.Get(0);
+		MapData mapData = mapDatabase.Get(0);
 		magicCube.Load(mapData);
 		magicCube.Init();
 
