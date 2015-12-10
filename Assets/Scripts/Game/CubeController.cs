@@ -5,13 +5,6 @@ using System.Collections.Generic;
 
 public sealed class CubeController : MonoBehaviour
 {
-	public struct SelectCube
-	{
-		public CubeItem cube;
-		public Vector3 position;
-		public Quaternion rotation;
-	}
-
 	public float viewDistance = 4;
 	public float viewLerp = 2;
 	public float viewSensitivity = 50;
@@ -27,6 +20,7 @@ public sealed class CubeController : MonoBehaviour
 	public Camera camera { get; private set; }
 	public MagicCube magicCube { get; private set; }
 	public Player player { get; private set; }
+	public MapData mapData { get; private set; }
 	public StateMachine stateMachine { get; private set; }
 	public Trigger cubeTrigger { get; private set; }
 	public BoxCollider cubeCollider { get; private set; }
@@ -94,31 +88,10 @@ public sealed class CubeController : MonoBehaviour
 
 	private void Start()
 	{
-		MapData mapData = mapDatabase.Get(0);
+		mapData = mapDatabase.Get(0);
 		magicCube.Load(mapData);
 		magicCube.Init();
 
-		List<CubeItem> cubeList = magicCube[magicCube.layer];
-		CubeItem cube = cubeList[UnityEngine.Random.Range(0, cubeList.Count)];
-		
-		List<AxisType> axisTypes = new List<AxisType>(cube.itemDict.Keys);
-		int index = UnityEngine.Random.Range(0, axisTypes.Count);
-		AxisType upAxis = axisTypes[index];
-
-		axisTypes = new List<AxisType>(Enum.GetValues(typeof(AxisType)) as AxisType[]);
-
-		axisTypes.Remove(upAxis);
-		axisTypes.Remove((AxisType)(-(int)upAxis));
-
-		index = UnityEngine.Random.Range(0, axisTypes.Count);
-		AxisType rightAxis = axisTypes[index];
-
-		axisTypes.Remove(rightAxis);
-		axisTypes.Remove((AxisType)(-(int)rightAxis));
-
-		index = UnityEngine.Random.Range(0, axisTypes.Count);
-		AxisType forwardAxis = axisTypes[index];
-
-		player.SetCube(cube, rightAxis, upAxis, forwardAxis);
+		player.Spawn(magicCube.destCube, mapData.spawnInfo);
 	}
 }

@@ -8,10 +8,12 @@ using System.Collections.Generic;
 public class MagicCubeEditor : Editor
 {
 	private static int s_Id = 0;
+	private static int s_LoadId = 0;
 	private static int s_Step = 5;
 	private static float s_Size = 1;
 	private static float s_Space = 0;
-	private static int s_LoadId = 0;
+	private static CubeItem s_DestCube = null;
+	private static SpawnInfo s_SpawnInfo;
 	private static MagicCube s_MagicCube;
 
 	private DataSystem<MapData> mapDatabase
@@ -58,6 +60,12 @@ public class MagicCubeEditor : Editor
 		EditorGUILayout.LabelField("Step", s_MagicCube.step.ToString());
 		EditorGUILayout.LabelField("Size", s_MagicCube.size.ToString());
 		EditorGUILayout.LabelField("Space", s_MagicCube.space.ToString());
+
+		s_DestCube = EditorGUILayout.ObjectField("DestCube", s_DestCube, typeof(CubeItem), true) as CubeItem;
+		s_SpawnInfo.id = EditorGUILayout.IntField("SpawnId", s_SpawnInfo.id);
+		s_SpawnInfo.right = (AxisType)EditorGUILayout.EnumPopup("SpawnRight", s_SpawnInfo.right);
+		s_SpawnInfo.up = (AxisType)EditorGUILayout.EnumPopup("SpawnUp", s_SpawnInfo.up);
+		s_SpawnInfo.forward = (AxisType)EditorGUILayout.EnumPopup("SpawnForward", s_SpawnInfo.forward);
 
 		if (GUILayout.Button("Save"))
 		{
@@ -129,7 +137,36 @@ public class MagicCubeEditor : Editor
 			s_MagicCube = gameObject.AddComponent<MagicCube>();
 		}
 
-		s_MagicCube.Generate(s_Id, s_Step, s_Size, s_Space);
+		s_MagicCube.Generate(s_Id, s_Step, s_Size, s_Space, 0);
+		s_DestCube = s_MagicCube.destCube;
+
+		List<CubeItem> cubeList = s_MagicCube[s_MagicCube.layer];
+		CubeItem cube = cubeList[UnityEngine.Random.Range(0, cubeList.Count)];
+		
+		List<AxisType> axisTypes = new List<AxisType>(cube.itemDict.Keys);
+		int index = UnityEngine.Random.Range(0, axisTypes.Count);
+		AxisType upAxis = axisTypes[index];
+
+		axisTypes = new List<AxisType>(Enum.GetValues(typeof(AxisType)) as AxisType[]);
+
+		axisTypes.Remove(upAxis);
+		axisTypes.Remove((AxisType)(-(int)upAxis));
+
+		index = UnityEngine.Random.Range(0, axisTypes.Count);
+		AxisType rightAxis = axisTypes[index];
+
+		axisTypes.Remove(rightAxis);
+		axisTypes.Remove((AxisType)(-(int)rightAxis));
+
+		index = UnityEngine.Random.Range(0, axisTypes.Count);
+		AxisType forwardAxis = axisTypes[index];
+
+		s_SpawnInfo = new SpawnInfo();
+		s_SpawnInfo.id = cube.id;
+		s_SpawnInfo.right = rightAxis;
+		s_SpawnInfo.up = upAxis;
+		s_SpawnInfo.forward = forwardAxis;
+
 		Selection.activeGameObject = s_MagicCube.gameObject;
 	}
 
@@ -151,6 +188,8 @@ public class MagicCubeEditor : Editor
 		dataDict[MapData.FIELD_STEP] = s_MagicCube.step;
 		dataDict[MapData.FIELD_SIZE] = s_MagicCube.size;
 		dataDict[MapData.FIELD_SPACE] = s_MagicCube.space;
+		dataDict[MapData.FIELD_DEST] = s_DestCube.id;
+		dataDict[MapData.FIELD_SPAWN] = MapData.ParseSpawn(s_SpawnInfo);
 		dataDict[MapData.FIELD_CUBE] = MapData.ParseCube(cubeItems);
 
 		MapData data = new MapData();
@@ -168,6 +207,8 @@ public class MagicCubeEditor : Editor
 		}
 
 		s_MagicCube.Load(mapData);
+		s_DestCube = s_MagicCube.destCube;
+		s_SpawnInfo = mapData.spawnInfo;
 	}
 
 	private void Delete()

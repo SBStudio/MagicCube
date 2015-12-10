@@ -24,13 +24,13 @@ public sealed class RollState : IState
 		float angle = controller.rollAngle * progress;
 		
 		Vector3 center = Vector3.zero;
-		foreach (CubeController.SelectCube select in controller.selectDict.Values)
+		foreach (SelectCube select in controller.selectDict.Values)
 		{
 			center += select.cube.transform.position;
 		}
 		center /= controller.selectDict.Count;
 		
-		foreach (KeyValuePair<CubeItem, CubeController.SelectCube> select in controller.selectDict)
+		foreach (KeyValuePair<CubeItem, SelectCube> select in controller.selectDict)
 		{
 			select.Key.transform.localPosition = select.Value.position;
 			select.Key.transform.localRotation = select.Value.rotation;

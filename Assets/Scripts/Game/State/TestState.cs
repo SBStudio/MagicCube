@@ -68,7 +68,7 @@ public sealed class TestState : IState
 			return;
 		}
 		
-		CubeController.SelectCube select = new CubeController.SelectCube();
+		SelectCube select = new SelectCube();
 		select.cube = cube;
 		select.position = cube.transform.localPosition;
 		select.rotation = cube.transform.localRotation;

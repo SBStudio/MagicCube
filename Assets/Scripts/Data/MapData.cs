@@ -14,13 +14,17 @@ public sealed class MapData : IData
 		{ MapData.FIELD_STEP, typeof(int) },
 		{ MapData.FIELD_SIZE, typeof(float) },
 		{ MapData.FIELD_SPACE, typeof(float) },
-		{ MapData.FIELD_CUBE, typeof(string) },	
+		{ MapData.FIELD_DEST, typeof(int) },
+		{ MapData.FIELD_SPAWN, typeof(string) },
+		{ MapData.FIELD_CUBE, typeof(string) },
 	};
 
 	public const string FIELD_ID = "id";
 	public const string FIELD_STEP = "step";
 	public const string FIELD_SIZE = "size";
 	public const string FIELD_SPACE = "space";
+	public const string FIELD_DEST = "dest";
+	public const string FIELD_SPAWN = "spawn";
 	public const string FIELD_CUBE = "cube";
 	private const char SPLIT_DATA = '|';
 	private const char SPLIT_FIELD = ';';
@@ -33,6 +37,8 @@ public sealed class MapData : IData
 	public int step { get; private set; }
 	public float size { get; private set; }
 	public float space { get; private set; }
+	public SpawnInfo spawnInfo { get; private set; }
+	public int destId { get; private set; }
 	public Dictionary<AxisType, ItemType>[] cubeItems { get; private set; }
 
 	public MapData()
@@ -44,11 +50,34 @@ public sealed class MapData : IData
 	{
 		dataDict = arg;
 
-		id = (int)arg[FIELD_ID];
+		this.id = (int)arg[FIELD_ID];
 		step = (int)arg[FIELD_STEP];
 		size = (float)arg[FIELD_SIZE];
 		space = (float)arg[FIELD_SPACE];
+		destId = (int)arg[FIELD_DEST];
+		spawnInfo = ParseSpawn((string)arg[FIELD_SPAWN]);
 		cubeItems = ParseCube((string)arg[FIELD_CUBE]);
+	}
+
+	public static SpawnInfo ParseSpawn(string value)
+	{
+		SpawnInfo spawnInfo = new SpawnInfo();
+		string[] datas = value.Split(SPLIT_DATA);
+
+		spawnInfo.id = int.Parse(datas[0]);
+		spawnInfo.right = (AxisType)int.Parse(datas[1]);
+		spawnInfo.up = (AxisType)int.Parse(datas[2]);
+		spawnInfo.forward = (AxisType)int.Parse(datas[3]);
+
+		return spawnInfo;
+	}
+
+	public static string ParseSpawn(SpawnInfo spawnInfo)
+	{
+		return spawnInfo.id + SPLIT_DATA.ToString()
+			+ (int)spawnInfo.right + SPLIT_DATA.ToString()
+			+ (int)spawnInfo.up + SPLIT_DATA.ToString()
+			+ (int)spawnInfo.forward;
 	}
 
 	public static Dictionary<AxisType, ItemType>[] ParseCube(string value)

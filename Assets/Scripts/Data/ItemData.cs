@@ -4,11 +4,15 @@ using System.Collections.Generic;
 
 public sealed class ItemData : IData
 {
+	public const string DATABASE = "Database.db";
+	public const string TABLE = "Item";
+
 	public const string FIELD_ID = "id";
 	public const string FIELD_TYPE = "type";
 	public const string FIELD_COLOR = "color";
 
 	public Dictionary<string, object> dataDict { get; private set; }
+
 	public int id { get; private set; }
 	public ItemType type { get; private set; }
 	public Color color { get; private set; }

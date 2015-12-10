@@ -7,13 +7,14 @@ using System.Collections.Generic;
 public sealed class MagicCube : MonoBehaviour
 {
 	public float colorTime = 0.5f;
-	public List<CubeItem>[] cubeLists { get; private set; }
 	public int id { get; private set; }
 	public int step { get; private set; }
 	public int num { get; private set; }
 	public float size { get; private set; }
 	public float space { get; private set; }
 	public float distance { get; private set; }
+	public CubeItem destCube { get; private set; }
+	public List<CubeItem>[] cubeLists { get; private set; }
 
 	private TimerBehaviour m_FadeTimer;
 
@@ -114,20 +115,10 @@ public sealed class MagicCube : MonoBehaviour
 
 	public void Load(MapData mapData)
 	{
-		Generate(mapData.id, mapData.step, mapData.size, mapData.space);
-
-		for (int i = cubeLists.Length; --i >= 0;)
-		{
-			List<CubeItem> cubeList = cubeLists[i];
-			for (int j = cubeList.Count; --j >= 0;)
-			{
-				CubeItem cube = cubeList[j];
-				cube.Generate(mapData.cubeItems[cube.id]);
-			}
-		}
+		Generate(mapData.id, mapData.step, mapData.size, mapData.space, mapData.destId, mapData.cubeItems);
 	}
 
-	public void Generate(int id, int step, float size, float space)
+	public void Generate(int id, int step, float size, float space, int destId, Dictionary<AxisType, ItemType>[] cubeItems = null)
 	{
 		for (int i = transform.childCount; --i >= 0;)
 		{
@@ -180,6 +171,11 @@ public sealed class MagicCube : MonoBehaviour
 			cube.size = size;
 			cube.collider.size = Vector3.one * (1 + space);
 
+			if (destId == i)
+			{
+				destCube = cube;
+			}
+
 			if (null == cubeLists[layer])
 			{
 				cubeLists[layer] = new List<CubeItem>();
@@ -193,7 +189,7 @@ public sealed class MagicCube : MonoBehaviour
 			for (int j = cubeList.Count; --j >= 0;)
 			{
 				CubeItem cube = cubeList[j];
-				cube.Generate(RandomCube(cube));
+				cube.Generate(null == cubeItems ? RandomCube(cube) : cubeItems[cube.id]);
 			}
 
 			for (int j = cubeList.Count; --j >= 0;)

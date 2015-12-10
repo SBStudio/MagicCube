@@ -7,6 +7,11 @@ public sealed class Player : MonoBehaviour
 	public AxisType upAxis { get; private set; }
 	public AxisType forwardAxis { get; private set; }
 
+	public void Spawn(CubeItem cube, SpawnInfo spawnInfo)
+	{
+		SetCube(cube, spawnInfo.right, spawnInfo.up, spawnInfo.forward);
+	}
+
 	public void SetCube(CubeItem cube, AxisType rightAxis, AxisType upAxis, AxisType forwardAxis)
 	{
 		this.cube = cube;
