@@ -39,7 +39,7 @@ public sealed class MapData : IData
 	public float space { get; private set; }
 	public SpawnInfo spawnInfo { get; private set; }
 	public int destId { get; private set; }
-	public Dictionary<AxisType, ItemType>[] cubeItems { get; private set; }
+	public Dictionary<AxisType, int>[] cubeItems { get; private set; }
 
 	public MapData()
 	{
@@ -80,17 +80,17 @@ public sealed class MapData : IData
 			+ (int)spawnInfo.forward;
 	}
 
-	public static Dictionary<AxisType, ItemType>[] ParseCube(string value)
+	public static Dictionary<AxisType, int>[] ParseCube(string value)
 	{
 		string[] datas = value.Split(SPLIT_DATA);
-		Dictionary<AxisType, ItemType>[] cubeItems = new Dictionary<AxisType, ItemType>[datas.Length];
+		Dictionary<AxisType, int>[] cubeItems = new Dictionary<AxisType, int>[datas.Length];
 		for (int i = datas.Length; --i >= 0;)
 		{
 			string[] mapDatas = datas[i].Split(SPLIT_FIELD);
 			int id = int.Parse(mapDatas[0]);
 			string mapData = mapDatas[1];
 
-			Dictionary<AxisType, ItemType> itemDict = new Dictionary<AxisType, ItemType>();
+			Dictionary<AxisType, int> itemDict = new Dictionary<AxisType, int>();
 			cubeItems[id] = itemDict;
 
 			string[] cubeDatas = mapData.Split(SPLIT_CUBE);
@@ -98,25 +98,25 @@ public sealed class MapData : IData
 			{
 				string[] itemDatas = cubeDatas[j].Split(SPLIT_ITEM);
 				AxisType axisType = (AxisType)int.Parse(itemDatas[0]);
-				ItemType itemType = (ItemType)int.Parse(itemDatas[1]);
-				itemDict[axisType] = itemType;
+				int itemId = int.Parse(itemDatas[1]);
+				itemDict[axisType] = itemId;
 			}
 		}
 
 		return cubeItems;
 	}
 
-	public static string ParseCube(Dictionary<AxisType, ItemType>[] cubeItems)
+	public static string ParseCube(Dictionary<AxisType, int>[] cubeItems)
 	{
 		string str = string.Empty;
 		for (int i = cubeItems.Length; --i >= 0;)
 		{
-			Dictionary<AxisType, ItemType> cubeItem = cubeItems[i];
+			Dictionary<AxisType, int> cubeItem = cubeItems[i];
 			string id = i.ToString();
 			string data = string.Empty;
-			foreach (KeyValuePair<AxisType, ItemType> dataInfo in cubeItem)
+			foreach (KeyValuePair<AxisType, int> dataInfo in cubeItem)
 			{
-				data += (int)dataInfo.Key + SPLIT_ITEM.ToString() + (int)dataInfo.Value + SPLIT_CUBE.ToString();
+				data += (int)dataInfo.Key + SPLIT_ITEM.ToString() + dataInfo.Value + SPLIT_CUBE.ToString();
 			}
 			data = data.Remove(data.Length - 1);
 

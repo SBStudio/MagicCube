@@ -172,14 +172,18 @@ public class MagicCubeEditor : Editor
 
 	private void Save()
 	{
-		Dictionary<AxisType, ItemType>[] cubeItems = new Dictionary<AxisType, ItemType>[s_MagicCube.num];
+		Dictionary<AxisType, int>[] cubeItems = new Dictionary<AxisType, int>[s_MagicCube.num];
 		for (int i = s_MagicCube.maxLayer + 1; --i >= 0;)
 		{
 			List<CubeItem> cubeList = s_MagicCube[i];
 			for (int j = cubeList.Count; --j >= 0;)
 			{
 				CubeItem cube = cubeList[j];
-				cubeItems[cube.id] = cube.itemDict;
+				cubeItems[cube.id] = new Dictionary<AxisType, int>();
+				foreach (KeyValuePair<AxisType, ItemData> itemInfo in cube.itemDict)
+				{
+					cubeItems[cube.id][itemInfo.Key] = itemInfo.Value.id;
+				}
 			}
 		}
 

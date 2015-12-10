@@ -1,18 +1,23 @@
 using UnityEngine;
+using Framework;
 using System.Collections.Generic;
 
 public sealed class CubeItem : MonoBehaviour
 {
-	private static readonly Dictionary<ItemType, Color> s_ColorDict = new Dictionary<ItemType, Color>()
+	private static DataSystem<ItemData> itemDatabase
 	{
-		{ ItemType.NONE, new Color(1, 1, 1) },
-		{ ItemType.TURN_LEFT, new Color(0, 0, 1) },
-		{ ItemType.TURN_RIGHT, new Color(0, 1, 0) },
-		{ ItemType.TURN_BACK, new Color(1, 0.5f, 0) },
-		{ ItemType.TURN_UP, new Color(1, 0, 1) },
-		{ ItemType.TURN_DOWN, new Color(0, 0, 0) },
-		{ ItemType.STOP, new Color(1, 0, 0) },
-	};
+		get
+		{
+			if (null == s_ItemDatabase)
+			{
+				s_ItemDatabase = DataSystem<ItemData>.instance;
+				s_ItemDatabase.Init(ItemData.DATABASE, ItemData.TABLE, ItemData.FIELDS);
+			}
+
+			return s_ItemDatabase;
+		}
+	}
+	private static DataSystem<ItemData> s_ItemDatabase;
 
 	public int id { get; set; }
 	public int layer { get; set; }
@@ -21,11 +26,11 @@ public sealed class CubeItem : MonoBehaviour
 		get { return transform.localScale.x; }
 		set { transform.localScale = Vector3.one * value; }
 	}
-	public Dictionary<AxisType, ItemType> itemDict { get; private set; }
+	public Dictionary<AxisType, ItemData> itemDict { get; private set; }
 	private Dictionary<AxisType, Renderer> m_RendererDict;
 	private Dictionary<AxisType, Material> m_MaterialDict;
 
-	public ItemType this[AxisType axisType]
+	public ItemData this[AxisType axisType]
 	{
 		get { return itemDict[axisType]; }
 		set
@@ -36,10 +41,9 @@ public sealed class CubeItem : MonoBehaviour
 			}
 
 			itemDict[axisType] = value;
-			m_RendererDict[axisType].name = axisType + "_" + value;
+			m_RendererDict[axisType].name = axisType + "_" + value.name;
 			Material material = m_MaterialDict[axisType];
-			Color color = s_ColorDict[value];
-			material.color = color;
+			material.color = value.color;
 		}
 	}
 
@@ -113,7 +117,7 @@ public sealed class CubeItem : MonoBehaviour
 	}
 	private bool m_EnableRenderer = true;
 
-	public void Generate(Dictionary<AxisType, ItemType> itemDict)
+	public void Generate(Dictionary<AxisType, int> itemDict)
 	{
 		for (int i = transform.childCount; --i >= 0;)
 		{
@@ -132,14 +136,17 @@ public sealed class CubeItem : MonoBehaviour
 #endif
 		}
 
-		this.itemDict = itemDict;
+		this.itemDict = new Dictionary<AxisType, ItemData>();
 		m_RendererDict = new Dictionary<AxisType, Renderer>();
 		m_MaterialDict = new Dictionary<AxisType, Material>();
 
-		foreach (KeyValuePair<AxisType, ItemType> itemInfo in itemDict)
+		foreach (KeyValuePair<AxisType, int> itemInfo in itemDict)
 		{
+			ItemData itemData = itemDatabase.Get(itemInfo.Value);
+			this.itemDict[itemInfo.Key] = itemData;
+
 			GameObject gameObject = Instantiate(Resources.Load<GameObject>(ResourceDefine.CUBE_FACE));
-			gameObject.name = itemInfo.Key + "_" + itemInfo.Value;
+			gameObject.name = itemInfo.Key + "_" + itemData.name;
 			gameObject.transform.SetParent(transform);
 			gameObject.transform.localPosition = Vector3.zero;
 			gameObject.transform.forward = AxisUtil.Axis2Direction(transform, itemInfo.Key);
@@ -148,8 +155,8 @@ public sealed class CubeItem : MonoBehaviour
 			Renderer renderer = gameObject.GetComponent<Renderer>();
 			Material material = new Material(renderer.sharedMaterial);
 			renderer.material = material;
-			Color color = s_ColorDict[itemInfo.Value];
-			material.color = color;
+
+			material.color = itemData.color;
 			m_RendererDict[itemInfo.Key] = renderer;
 			m_MaterialDict[itemInfo.Key] = material;
 		}

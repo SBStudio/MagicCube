@@ -47,30 +47,56 @@ public sealed class ItemState : IState
 		}
 	}
 
-	private void UseItem(ItemType itemType)
+	private void UseItem(ItemData itemData)
 	{
-		if (ItemType.NONE == itemType)
+		if (ItemType.FORWARD == itemData.id)
 		{
 		}
-		else if (ItemType.TURN_LEFT == itemType)
+		else if (ItemType.TURN_LEFT == itemData.id)
 		{
 			controller.player.transform.Rotate(Vector3.up, -90);
 			m_EndRotation = controller.player.transform.rotation;
 			controller.player.transform.rotation = m_StartRotation;
 		}
-		else if (ItemType.TURN_RIGHT == itemType)
+		else if (ItemType.TURN_RIGHT == itemData.id)
 		{
 			controller.player.transform.Rotate(Vector3.up, 90);
 			m_EndRotation = controller.player.transform.rotation;
 			controller.player.transform.rotation = m_StartRotation;
 		}
-		else if (ItemType.TURN_BACK == itemType)
+		else if (ItemType.TURN_BACK == itemData.id)
 		{
 			controller.player.transform.Rotate(Vector3.up, 180);
 			m_EndRotation = controller.player.transform.rotation;
 			controller.player.transform.rotation = m_StartRotation;
 		}
-		else if (ItemType.TURN_DOWN == itemType)
+		else if (ItemType.TURN_UP == itemData.id)
+		{
+			controller.magicCube.enableCollision = true;
+
+			RaycastHit raycastHit;
+			if (Physics.Raycast(controller.player.cube.transform.position,
+				controller.player.transform.up,
+				out raycastHit,
+				controller.magicCube.distance,
+				1 << LayerDefine.CUBE))
+			{
+				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
+				if (null != cube)
+				{
+					m_Cube = cube;
+					m_EndPosition = cube.transform.position + controller.player.transform.up * cube.size * 0.5f;
+					++controller.magicCube.layer;
+				}
+				else
+				{
+					controller.stateMachine.Enter<IdleState>();
+				}
+			}
+
+			controller.magicCube.enableCollision = false;
+		}
+		else if (ItemType.TURN_DOWN == itemData.id)
 		{
 			controller.magicCube.enableCollision = true;
 			
@@ -94,32 +120,6 @@ public sealed class ItemState : IState
 				}
 			}
 
-			controller.magicCube.enableCollision = false;
-		}
-		else if (ItemType.TURN_UP == itemType)
-		{
-			controller.magicCube.enableCollision = true;
-			
-			RaycastHit raycastHit;
-			if (Physics.Raycast(controller.player.cube.transform.position,
-			                    controller.player.transform.up,
-			                    out raycastHit,
-								controller.magicCube.distance,
-			                    1 << LayerDefine.CUBE))
-			{
-				CubeItem cube = raycastHit.collider.GetComponent<CubeItem>();
-				if (null != cube)
-				{
-					m_Cube = cube;
-					m_EndPosition = cube.transform.position + controller.player.transform.up * cube.size * 0.5f;
-					++controller.magicCube.layer;
-				}
-				else
-				{
-					controller.stateMachine.Enter<IdleState>();
-				}
-			}
-			
 			controller.magicCube.enableCollision = false;
 		}
 	}

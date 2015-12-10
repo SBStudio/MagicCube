@@ -14,13 +14,15 @@ namespace Framework
 				+ color.a;
 		}
 
-		public static void Parse(this Color color, string value)
+		public static Color Parse(this Color color, string value)
 		{
 			string[] colors = value.Split(SPLIT);
 			color.r = float.Parse(colors[0]);
 			color.g = float.Parse(colors[1]);
 			color.b = float.Parse(colors[2]);
-			color.r = float.Parse(colors[3]);
+			color.a = float.Parse(colors[3]);
+
+			return color;
 		}
 	}
 }

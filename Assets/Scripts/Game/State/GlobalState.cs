@@ -74,7 +74,7 @@ public sealed class GlobalState : IState
 					return;
 				}
 
-				if (ItemType.STOP == evt.cube.itemDict[evt.upAxis])
+				if (ItemType.STOP == evt.cube.itemDict[evt.upAxis].id)
 				{
 					controller.stateMachine.Enter<IdleState>();
 				}

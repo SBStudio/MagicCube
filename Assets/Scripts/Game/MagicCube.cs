@@ -6,6 +6,21 @@ using System.Collections.Generic;
 
 public sealed class MagicCube : MonoBehaviour
 {
+	private static DataSystem<ItemData> itemDatabase
+	{
+		get
+		{
+			if (null == s_ItemDatabase)
+			{
+				s_ItemDatabase = DataSystem<ItemData>.instance;
+				s_ItemDatabase.Init(ItemData.DATABASE, ItemData.TABLE, ItemData.FIELDS);
+			}
+
+			return s_ItemDatabase;
+		}
+	}
+	private static DataSystem<ItemData> s_ItemDatabase;
+
 	public float colorTime = 0.5f;
 	public int id { get; private set; }
 	public int step { get; private set; }
@@ -118,7 +133,7 @@ public sealed class MagicCube : MonoBehaviour
 		Generate(mapData.id, mapData.step, mapData.size, mapData.space, mapData.destId, mapData.cubeItems);
 	}
 
-	public void Generate(int id, int step, float size, float space, int destId, Dictionary<AxisType, ItemType>[] cubeItems = null)
+	public void Generate(int id, int step, float size, float space, int destId, Dictionary<AxisType, int>[] cubeItems = null)
 	{
 		for (int i = transform.childCount; --i >= 0;)
 		{
@@ -208,12 +223,12 @@ public sealed class MagicCube : MonoBehaviour
 		layer = maxLayer;
 	}
 
-	private Dictionary<AxisType, ItemType> RandomCube(CubeItem cube)
+	private Dictionary<AxisType, int> RandomCube(CubeItem cube)
 	{
-		Dictionary<AxisType, ItemType> itemDict = new Dictionary<AxisType, ItemType>();
+		Dictionary<AxisType, int> itemDict = new Dictionary<AxisType, int>();
 		
 		AxisType[] axisTypes = Enum.GetValues(typeof(AxisType)) as AxisType[];
-		ItemType[] itemTypes = Enum.GetValues(typeof(ItemType)) as ItemType[];
+		ItemData[] itemDatas = itemDatabase.GetAll();
 		for (int i = axisTypes.Length; --i >= 0;)
 		{
 			AxisType axis = axisTypes[i];
@@ -225,8 +240,8 @@ public sealed class MagicCube : MonoBehaviour
 				continue;
 			}
 			
-			ItemType itemType = itemTypes[UnityEngine.Random.Range(0, itemTypes.Length)];
-			itemDict[axis] = itemType;
+			ItemData itemData = itemDatas[UnityEngine.Random.Range(0, itemDatas.Length)];
+			itemDict[axis] = itemData.id;
 		}
 
 		return itemDict;
